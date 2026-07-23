@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920" role="img" aria-label="Espaço para patrocinador">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#141414"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#g1)"/>
+  <rect x="60" y="60" width="960" height="1800" rx="40" fill="none" stroke="#2a2a2a" stroke-width="4" stroke-dasharray="24 20"/>
+  <g text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+    <circle cx="540" cy="820" r="110" fill="none" stroke="#fcc200" stroke-width="8"/>
+    <path d="M540 770 v100 M490 820 h100" stroke="#fcc200" stroke-width="8" stroke-linecap="round"/>
+    <text x="540" y="1030" font-size="62" font-weight="800" fill="#fafafa" letter-spacing="4">SEU ANÚNCIO AQUI</text>
+    <text x="540" y="1110" font-size="40" font-weight="500" fill="#6b6b6b" letter-spacing="6">VÍDEO OU IMAGEM 9:16</text>
+  </g>
+</svg>

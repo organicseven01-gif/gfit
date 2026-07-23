@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Timer — CrossFit / Hyrox</title>
+<style>
+  :root{
+    --bg:#0a0c11;
+    --panel:#151922;
+    --line:#252c3a;
+    --text:#e8ecf4;
+    --muted:#7b8699;
+    --accent:#3b82f6;
+    --c:#3b82f6;          /* cor da fase atual */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+
+  /* ---------- layout ---------- */
+  .screen{position:fixed;inset:0;display:flex;flex-direction:column}
+  .hide{display:none!important}
+
+  /* ---------- config ---------- */
+  #config{padding:clamp(16px,3vw,40px);gap:clamp(16px,3vh,32px);overflow-y:auto}
+
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .tab{
+    padding:12px 22px;border-radius:999px;border:1px solid var(--line);
+    font-size:clamp(13px,1.4vw,16px);font-weight:600;letter-spacing:.06em;
+    color:var(--muted);transition:.15s;white-space:nowrap;
+  }
+  .tab:hover{color:var(--text);border-color:#3a445a}
+  .tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  .card{
+    flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;
+    gap:clamp(20px,4vh,40px);
+  }
+  .desc{color:var(--muted);font-size:clamp(13px,1.5vw,17px);text-align:center;max-width:38ch;line-height:1.5}
+
+  .fields{display:flex;gap:clamp(12px,2.5vw,36px);flex-wrap:wrap;justify-content:center}
+  .field{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .field label{font-size:clamp(10px,1.1vw,12px);letter-spacing:.16em;color:var(--muted);font-weight:700}
+  .stepper{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:8px}
+  .stepper button{
+    width:clamp(38px,4.5vw,52px);height:clamp(38px,4.5vw,52px);border-radius:12px;
+    font-size:clamp(20px,2.4vw,28px);font-weight:300;color:var(--muted);
+  }
+  .stepper button:hover{background:#222836;color:var(--text)}
+  .stepper input{
+    width:clamp(72px,8vw,110px);background:none;border:none;color:var(--text);text-align:center;
+    font-size:clamp(30px,4.4vw,54px);font-weight:700;font-variant-numeric:tabular-nums;
+  }
+  .stepper input:focus{outline:none}
+  .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none}
+  .stepper input[type=number]{-moz-appearance:textfield}
+
+  .presets{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .preset{
+    padding:9px 16px;border-radius:10px;border:1px solid var(--line);
+    font-size:clamp(11px,1.2vw,13px);color:var(--muted);font-weight:600;
+  }
+  .preset:hover{border-color:var(--accent);color:var(--text)}
+
+  .start{
+    padding:clamp(16px,2vh,22px) clamp(56px,9vw,110px);border-radius:999px;
+    background:var(--accent);color:#fff;font-weight:800;
+    font-size:clamp(16px,1.9vw,22px);letter-spacing:.14em;
+    box-shadow:0 8px 28px rgba(59,130,246,.32);transition:.15s;
+  }
+  .start:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(59,130,246,.42)}
+
+  .foot{display:flex;justify-content:center;gap:20px;color:var(--muted);font-size:12px;flex-wrap:wrap}
+  kbd{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-size:11px;font-family:inherit}
+
+  /* ---------- run ---------- */
+  #run{
+    align-items:center;justify-content:center;text-align:center;
+    background:radial-gradient(ellipse at 50% 45%, color-mix(in srgb,var(--c) 16%, var(--bg)) 0%, var(--bg) 70%);
+    transition:background .4s;
+  }
+  #round{
+    font-size:clamp(14px,2vw,26px);letter-spacing:.28em;font-weight:700;color:var(--muted);
+    min-height:1.2em;
+  }
+  #phase{
+    font-size:clamp(28px,6vw,84px);letter-spacing:.16em;font-weight:800;color:var(--c);
+    transition:color .3s;line-height:1.1;
+  }
+  #clockface{
+    font-size:clamp(90px,26vw,340px);font-weight:800;line-height:.92;
+    font-variant-numeric:tabular-nums;letter-spacing:-.02em;
+    transition:transform .1s;
+  }
+  #clockface.pulse{transform:scale(1.06)}
+  #total{font-size:clamp(12px,1.4vw,18px);color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.1em}
+
+  #bar{position:fixed;top:0;left:0;height:5px;background:var(--c);width:0;transition:width .2s linear}
+
+  .ctrls{position:fixed;bottom:clamp(18px,4vh,44px);display:flex;gap:12px;align-items:center}
+  .ctrl{
+    width:clamp(52px,6vw,68px);height:clamp(52px,6vw,68px);border-radius:50%;
+    border:1px solid var(--line);background:rgba(21,25,34,.7);backdrop-filter:blur(8px);
+    display:grid;place-items:center;transition:.15s;
+  }
+  .ctrl:hover{border-color:var(--c);background:#1c222e}
+  .ctrl svg{width:44%;height:44%;fill:currentColor}
+  .ctrl.main{width:clamp(70px,8.5vw,96px);height:clamp(70px,8.5vw,96px);background:var(--c);border-color:var(--c);color:#fff}
+  .ctrl.main:hover{filter:brightness(1.12)}
+  .ctrl.off{color:#4b5566}
+
+  @media (max-width:560px){ .fields{gap:14px} .tabs{gap:6px} .tab{padding:10px 15px} }
+</style>
+</head>
+<body>
+
+<!-- ============ CONFIGURAÇÃO ============ -->
+<div id="config" class="screen">
+  <nav class="tabs" id="tabs"></nav>
+
+  <div class="card">
+    <p class="desc" id="desc"></p>
+    <div class="fields" id="fields"></div>
+    <div class="presets" id="presets"></div>
+    <button class="start" id="btnStart">INICIAR</button>
+  </div>
+
+  <div class="foot">
+    <span><kbd>espaço</kbd> iniciar / pausar</span>
+    <span><kbd>R</kbd> reiniciar</span>
+    <span><kbd>F</kbd> tela cheia</span>
+    <span><kbd>esc</kbd> voltar</span>
+  </div>
+</div>
+
+<!-- ============ EXECUÇÃO ============ -->
+<div id="run" class="screen hide">
+  <div id="bar"></div>
+  <div id="round"></div>
+  <div id="phase"></div>
+  <div id="clockface">00:00</div>
+  <div id="total"></div>
+
+  <div class="ctrls">
+    <button class="ctrl" id="btnBack" title="Voltar (Esc)">
+      <svg viewBox="0 0 24 24"><path d="M15.4 4.6 8 12l7.4 7.4 1.4-1.4L10.8 12l6-6z"/></svg>
+    </button>
+    <button class="ctrl main" id="btnPlay" title="Iniciar / Pausar (espaço)">
+      <svg id="icPlay" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>
+      <svg id="icPause" class="hide" viewBox="0 0 24 24"><path d="M6.5 4.5h4v15h-4zM13.5 4.5h4v15h-4z"/></svg>
+    </button>
+    <button class="ctrl" id="btnReset" title="Reiniciar (R)">
+      <svg viewBox="0 0 24 24"><path d="M12 5V2L7.5 6.5 12 11V8a5 5 0 1 1-5 5H5a7 7 0 1 0 7-8z"/></svg>
+    </button>
+    <button class="ctrl" id="btnSound" title="Som">
+      <svg id="icSoundOn" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>
+      <svg id="icSoundOff" class="hide" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4zm15 .4L17.6 8l-2.1 2.1L13.4 8 12 9.4l2.1 2.1L12 13.6 13.4 15l2.1-2.1 2.1 2.1 1.4-1.4-2.1-2.1z"/></svg>
+    </button>
+    <button class="ctrl" id="btnFull" title="Tela cheia (F)">
+      <svg viewBox="0 0 24 24"><path d="M4 9V4h5v2H6v3H4zm11-5h5v5h-2V6h-3V4zM4 15h2v3h3v2H4v-5zm14 0h2v5h-5v-2h3v-3z"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ================= modos ================= */
+const MODES = {
+  clock: {
+    nome:'RELÓGIO', cor:'#3b82f6',
+    desc:'Cronômetro livre, contando pra cima. Sem limite de tempo.',
+    campos:[],
+    build:()=>[{tipo:'run', label:'CRONÔMETRO', cima:true, seg:0}]
+  },
+  tabata: {
+    nome:'TABATA', cor:'#22c55e',
+    desc:'Blocos de trabalho e descanso alternados. O clássico é 8 rounds de 20s de trabalho por 10s de descanso.',
+    campos:[
+      {id:'rounds', label:'ROUNDS',    val:8,  min:1, max:99,  step:1},
+      {id:'work',   label:'TRABALHO',  val:20, min:1, max:600, step:5, seg:true},
+      {id:'rest',   label:'DESCANSO',  val:10, min:0, max:600, step:5, seg:true},
+    ],
+    presets:[
+      {nome:'Clássico 8×20/10', v:{rounds:8, work:20, rest:10}},
+      {nome:'12×30/15',         v:{rounds:12,work:30, rest:15}},
+      {nome:'10×40/20',         v:{rounds:10,work:40, rest:20}},
+      {nome:'Hyrox 8×60/30',    v:{rounds:8, work:60, rest:30}},
+    ],
+    build:v=>{
+      const f=[];
+      for(let i=1;i<=v.rounds;i++){
+        f.push({tipo:'work', label:'TRABALHO', seg:v.work, round:i, de:v.rounds});
+        if(v.rest>0) f.push({tipo:'rest', label:'DESCANSO', seg:v.rest, round:i, de:v.rounds});
+      }
+      return f;
+    }
+  },
+  fortime: {
+    nome:'FOR TIME', cor:'#a855f7',
+    desc:'Conta pra cima até você terminar o treino. O time cap encerra automaticamente.',
+    campos:[{id:'cap', label:'TIME CAP', val:20, min:0, max:180, step:1, unidade:'min'}],
+    presets:[
+      {nome:'Sem cap', v:{cap:0}},
+      {nome:'10 min',  v:{cap:10}},
+      {nome:'20 min',  v:{cap:20}},
+    ],
+    build:v=>[{tipo:'run', label:'FOR TIME', cima:true, seg:v.cap*60}]
+  },
+  emom: {
+    nome:'EMOM', cor:'#f59e0b',
+    desc:'A cada intervalo começa um round novo. Every Minute On the Minute.',
+    campos:[
+      {id:'rounds',   label:'ROUNDS',    val:10, min:1, max:99,  step:1},
+      {id:'interval', label:'INTERVALO', val:60, min:5, max:600, step:5, seg:true},
+    ],
+    presets:[
+      {nome:'10 × 1 min',  v:{rounds:10, interval:60}},
+      {nome:'20 × 1 min',  v:{rounds:20, interval:60}},
+      {nome:'E2MOM 10×2',  v:{rounds:10, interval:120}},
+      {nome:'8 × 90s',     v:{rounds:8,  interval:90}},
+    ],
+    build:v=>{
+      const f=[];
+      for(let i=1;i<=v.rounds;i++)
+        f.push({tipo:'work', label:'ROUND', seg:v.interval, round:i, de:v.rounds});
+      return f;
+    }
+  },
+  amrap: {
+    nome:'AMRAP', cor:'#ef4444',
+    desc:'Contagem regressiva. Quantos rounds você conseguir dentro do tempo.',
+    campos:[{id:'min', label:'DURAÇÃO', val:12, min:1, max:180, step:1, unidade:'min'}],
+    presets:[
+      {nome:'7 min',  v:{min:7}},
+      {nome:'12 min', v:{min:12}},
+      {nome:'15 min', v:{min:15}},
+      {nome:'20 min', v:{min:20}},
+    ],
+    build:v=>[{tipo:'run', label:'AMRAP', seg:v.min*60}]
+  },
+};
+
+const CORES = {prep:'#f59e0b', work:'#22c55e', rest:'#ef4444', run:'#3b82f6', fim:'#e8ecf4'};
+const PREP = 10; // segundos de preparação antes de começar
+
+/* ================= estado ================= */
+const S = {
+  modo:'tabata',
+  vals:{},
+  fases:[],
+  i:0,
+  ms:0,            // restante (regressivo) ou decorrido (progressivo) na fase
+  totalMs:0,       // tempo total decorrido
+  rodando:false,
+  t0:0,            // performance.now() da última retomada
+  base:0,          // S.ms no momento da retomada
+  baseTotal:0,
+  raf:null,
+  som:true,
+  ultimoBip:-1,
+};
+
+const $ = id => document.getElementById(id);
+
+/* ================= áudio ================= */
+let ac = null;
+function bip(freq, dur, vol){
+  if(!S.som) return;
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==='suspended') ac.resume();
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type='sine'; o.frequency.value=freq;
+    g.gain.setValueAtTime(0, ac.currentTime);
+    g.gain.linearRampToValueAtTime(vol, ac.currentTime+.015);
+    g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime+dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(); o.stop(ac.currentTime+dur+.02);
+  }catch(e){}
+}
+const bipCurto = ()=>bip(880,  .13, .35);   // 3, 2, 1
+const bipLongo = ()=>bip(1320, .55, .40);   // troca de fase
+const bipFim   = ()=>{bip(660,.7,.4); setTimeout(()=>bip(440,.9,.4),260);}
+
+/* ================= tela de config ================= */
+function montarTabs(){
+  $('tabs').innerHTML = '';
+  for(const [k,m] of Object.entries(MODES)){
+    const b=document.createElement('button');
+    b.className='tab'+(k===S.modo?' on':'');
+    b.textContent=m.nome;
+    b.onclick=()=>{S.modo=k; montarConfig();};
+    $('tabs').appendChild(b);
+  }
+}
+
+function montarConfig(){
+  const m = MODES[S.modo];
+  document.documentElement.style.setProperty('--accent', m.cor);
+  montarTabs();
+  $('desc').textContent = m.desc;
+
+  // campos
+  S.vals = {};
+  $('fields').innerHTML = '';
+  for(const c of m.campos){
+    S.vals[c.id] = c.val;
+    const wrap=document.createElement('div'); wrap.className='field';
+    const lb=document.createElement('label');
+    lb.textContent = c.label + (c.seg ? ' (SEG)' : c.unidade ? ' ('+c.unidade.toUpperCase()+')' : '');
+    const st=document.createElement('div'); st.className='stepper';
+
+    const menos=document.createElement('button'); menos.textContent='−';
+    const inp=document.createElement('input');
+    inp.type='number'; inp.value=c.val; inp.min=c.min; inp.max=c.max; inp.dataset.id=c.id;
+    const mais=document.createElement('button'); mais.textContent='+';
+
+    const set=v=>{
+      v = Math.max(c.min, Math.min(c.max, v));
+      inp.value = v; S.vals[c.id] = v;
+    };
+    menos.onclick = ()=>set(Number(inp.value) - c.step);
+    mais.onclick  = ()=>set(Number(inp.value) + c.step);
+    inp.oninput   = ()=>{ const n=Number(inp.value); if(!isNaN(n)) S.vals[c.id]=n; };
+    inp.onblur    = ()=>set(Number(inp.value)||c.min);
+
+    st.append(menos, inp, mais);
+    wrap.append(lb, st);
+    $('fields').appendChild(wrap);
+  }
+
+  // presets
+  $('presets').innerHTML='';
+  for(const p of (m.presets||[])){
+    const b=document.createElement('button'); b.className='preset'; b.textContent=p.nome;
+    b.onclick=()=>{
+      Object.assign(S.vals, p.v);
+      for(const el of $('fields').querySelectorAll('input'))
+        if(p.v[el.dataset.id] !== undefined) el.value = p.v[el.dataset.id];
+    };
+    $('presets').appendChild(b);
+  }
+}
+
+/* ================= execução ================= */
+function iniciar(){
+  const m = MODES[S.modo];
+  const fases = m.build(S.vals);
+  S.fases = S.modo==='clock' ? fases : [{tipo:'prep', label:'PREPARAR', seg:PREP}, ...fases];
+  S.i = 0;
+  S.totalMs = 0;
+  entrarFase(0);
+
+  $('config').classList.add('hide');
+  $('run').classList.remove('hide');
+  travarTela();
+  play();
+}
+
+function entrarFase(i){
+  S.i = i;
+  const f = S.fases[i];
+  S.ms = f.cima ? 0 : f.seg*1000;
+  S.base = S.ms;
+  S.baseTotal = S.totalMs;
+  S.t0 = performance.now();
+  S.ultimoBip = -1;
+  const cor = CORES[f.tipo] || CORES.run;
+  document.documentElement.style.setProperty('--c', cor);
+  desenhar();
+}
+
+function play(){
+  if(S.rodando) return;
+  S.rodando = true;
+  S.t0 = performance.now();
+  S.base = S.ms;
+  S.baseTotal = S.totalMs;
+  $('icPlay').classList.add('hide');
+  $('icPause').classList.remove('hide');
+  bip(520,.08,.2);
+  loop();
+}
+
+function pause(){
+  S.rodando = false;
+  cancelAnimationFrame(S.raf);
+  $('icPlay').classList.remove('hide');
+  $('icPause').classList.add('hide');
+}
+
+function loop(){
+  if(!S.rodando) return;
+  const dt = performance.now() - S.t0;
+  const f  = S.fases[S.i];
+
+  // a preparação não conta no tempo total do treino
+  S.totalMs = f.tipo === 'prep' ? 0 : S.baseTotal + dt;
+  S.ms = f.cima ? S.base + dt : S.base - dt;
+
+  // avisos sonoros nos 3 últimos segundos (só em fase regressiva)
+  if(!f.cima){
+    const s = Math.ceil(S.ms/1000);
+    if(s !== S.ultimoBip){
+      if(s>0 && s<=3) bipCurto();
+      S.ultimoBip = s;
+    }
+    if(S.ms <= 0) return proximaFase();
+  } else if(f.seg > 0 && S.ms >= f.seg*1000){
+    S.ms = f.seg*1000;
+    return proximaFase();
+  }
+
+  desenhar();
+  S.raf = requestAnimationFrame(loop);
+}
+
+function proximaFase(){
+  if(S.i + 1 < S.fases.length){
+    bipLongo();
+    entrarFase(S.i + 1);
+    S.rodando = true;
+    loop();
+  }else{
+    terminar();
+  }
+}
+
+function terminar(){
+  pause();
+  bipFim();
+  document.documentElement.style.setProperty('--c', CORES.fim);
+  $('phase').textContent = 'CONCLUÍDO';
+  $('round').textContent = '';
+  $('clockface').textContent = fmt(S.totalMs);
+  $('total').textContent = 'TEMPO TOTAL';
+  $('bar').style.width = '100%';
+}
+
+function desenhar(){
+  const f = S.fases[S.i];
+  const val = f.cima ? S.ms : Math.max(0, S.ms);
+
+  $('clockface').textContent = fmt(val);
+  $('phase').textContent = f.label;
+  $('round').textContent = f.round ? `ROUND ${f.round} / ${f.de}` : '';
+  $('total').textContent = (S.fases.length > 1 && f.tipo !== 'prep')
+    ? 'TOTAL ' + fmt(S.totalMs) : '';
+
+  // barra de progresso da fase
+  let pct = 0;
+  if(f.seg > 0) pct = f.cima ? (val/(f.seg*1000))*100 : 100 - (val/(f.seg*1000))*100;
+  $('bar').style.width = Math.min(100, pct) + '%';
+
+  // pulso no último segundo de cada fase regressiva
+  const cf = $('clockface');
+  if(!f.cima && val <= 3000 && val > 0){
+    const frac = (val/1000) % 1;
+    cf.classList.toggle('pulse', frac > .75);
+  } else cf.classList.remove('pulse');
+}
+
+function fmt(ms){
+  const t = Math.max(0, Math.round(ms/1000));
+  const h = Math.floor(t/3600), m = Math.floor(t%3600/60), s = t%60;
+  const pad = n => String(n).padStart(2,'0');
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
+function reiniciar(){
+  pause();
+  S.totalMs = 0;
+  entrarFase(0);
+  play();
+}
+
+function voltar(){
+  pause();
+  liberarTela();
+  $('run').classList.add('hide');
+  $('config').classList.remove('hide');
+  document.documentElement.style.setProperty('--c', MODES[S.modo].cor);
+}
+
+/* ================= extras ================= */
+// mantém a tela do tablet/TV acesa durante o treino
+let wake = null;
+async function travarTela(){
+  try{ if('wakeLock' in navigator) wake = await navigator.wakeLock.request('screen'); }catch(e){}
+}
+function liberarTela(){ try{ wake && wake.release(); wake = null; }catch(e){} }
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='visible' && S.rodando && !wake) travarTela();
+});
+
+function telaCheia(){
+  if(document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen?.();
+}
+
+/* ================= eventos ================= */
+$('btnStart').onclick = iniciar;
+$('btnPlay').onclick  = ()=> S.rodando ? pause() : play();
+$('btnReset').onclick = reiniciar;
+$('btnBack').onclick  = voltar;
+$('btnFull').onclick  = telaCheia;
+$('btnSound').onclick = ()=>{
+  S.som = !S.som;
+  $('btnSound').classList.toggle('off', !S.som);
+  $('icSoundOn').classList.toggle('hide', !S.som);
+  $('icSoundOff').classList.toggle('hide', S.som);
+  if(S.som) bip(660,.1,.3);
+};
+
+document.addEventListener('keydown', e=>{
+  if(e.target.tagName === 'INPUT') return;
+  const rodando = !$('run').classList.contains('hide');
+  if(e.code === 'Space'){ e.preventDefault(); rodando ? (S.rodando?pause():play()) : iniciar(); }
+  else if(e.key === 'r' || e.key === 'R'){ if(rodando) reiniciar(); }
+  else if(e.key === 'f' || e.key === 'F'){ telaCheia(); }
+  else if(e.key === 'Escape'){ if(rodando) voltar(); }
+});
+
+montarConfig();
+</script>
+</body>
+</html>

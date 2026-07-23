@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Selo da marca G FIT TIME. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="G FIT TIME">
+  <title>G FIT TIME</title>
+
+  <!-- botão superior do cronômetro -->
+  <rect x="234" y="16" width="44" height="28" rx="8" fill="#fcc200"/>
+
+  <!-- alça: contorno branco e miolo amarelo -->
+  <path d="M198 128 Q198 60 256 60 Q314 60 314 128"
+        fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round"/>
+  <path d="M213 133 Q213 86 256 86 Q299 86 299 133"
+        fill="none" stroke="#fcc200" stroke-width="13" stroke-linecap="round"/>
+
+  <!-- aro externo, com abertura no topo -->
+  <path d="M169.4 70.2 A 205 205 0 1 0 342.6 70.2"
+        fill="none" stroke="#fcc200" stroke-width="11" stroke-linecap="round"/>
+
+  <!-- marcações do mostrador (traços, não pontos) -->
+  <circle cx="256" cy="256" r="178" fill="none" stroke="#ffffff"
+          stroke-width="13" stroke-dasharray="4 25" opacity="0.85"/>
+
+  <!-- ponteiro na base -->
+  <circle cx="256" cy="459" r="10" fill="none" stroke="#fcc200" stroke-width="6"/>
+  <line x1="263" y1="453" x2="296" y2="432" stroke="#fcc200" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- lettering, contido dentro do mostrador -->
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif" text-anchor="middle">
+    <text x="256" y="272" font-size="158" font-weight="800" font-style="italic" fill="#fcc200">G</text>
+    <text x="256" y="344" font-size="80" font-weight="800" font-style="italic" fill="#ffffff">FIT</text>
+    <text x="256" y="390" font-size="34" font-weight="700" letter-spacing="10" fill="#fcc200">TIME</text>
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920" role="img" aria-label="Espaço para patrocinador">
+  <rect width="1080" height="1920" fill="#000000"/>
+  <circle cx="540" cy="960" r="420" fill="none" stroke="#fcc200" stroke-width="6" opacity="0.35"/>
+  <circle cx="540" cy="960" r="300" fill="none" stroke="#fcc200" stroke-width="6" opacity="0.6"/>
+  <g text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+    <text x="540" y="930" font-size="150" font-weight="800" font-style="italic" fill="#fcc200">G FIT</text>
+    <text x="540" y="1030" font-size="52" font-weight="700" letter-spacing="18" fill="#ffffff">TIME</text>
+    <text x="540" y="1500" font-size="38" font-weight="500" fill="#6b6b6b" letter-spacing="6">ANUNCIE NESTE ESPAÇO</text>
+  </g>
+</svg>

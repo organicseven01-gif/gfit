@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   G FIT TIMER — tokens de design
+   Toda a identidade visual sai daqui. Para trocar o amarelo da marca,
+   altere APENAS --marca (e --marca-suave / --marca-forte, derivados dele).
+   ========================================================================== */
+
+@theme {
+  /* --- marca ------------------------------------------------------------ */
+  /* Amarelo dourado da logo G FIT TIME. Valor estimado a partir da imagem —
+     confirmar com o hex oficial da identidade. */
+  --color-marca: #fcc200;
+  --color-marca-forte: #e0ad00; /* hover / estados pressionados */
+  --color-marca-suave: #ffe07a; /* realces e textos sobre fundo escuro */
+  --color-marca-contraste: #000000; /* cor do texto EM CIMA do amarelo */
+
+  /* --- superfícies (preto predominante) --------------------------------- */
+  --color-fundo: #000000; /* preto puro, como o fundo da logo */
+  --color-superficie: #121212; /* cards, sidebar */
+  --color-superficie-2: #1c1c1c; /* inputs, estados hover */
+  --color-borda: #2a2a2a;
+  --color-borda-forte: #3d3d3d;
+
+  /* --- texto ------------------------------------------------------------ */
+  --color-texto: #fafafa;
+  --color-texto-suave: #a1a1a1;
+  --color-texto-fraco: #6b6b6b;
+
+  /* --- semânticas (fases do timer e feedback) --------------------------- */
+  --color-preparar: #f59e0b;
+  --color-trabalho: #22c55e;
+  --color-descanso: #ef4444;
+  --color-neutro: #3b82f6;
+
+  /* --- tipografia ------------------------------------------------------- */
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* --- outros ----------------------------------------------------------- */
+  --radius-card: 0.875rem;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-fundo);
+  color: var(--color-texto);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Foco visível e consistente em toda a aplicação */
+:focus-visible {
+  outline: 2px solid var(--color-marca);
+  outline-offset: 2px;
+}
+
+/* Dígitos de cronômetro: largura fixa para o número não "tremer" */
+.numeros-timer {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* A tela da TV nunca deve rolar nem mostrar cursor */
+.tela-tv {
+  overflow: hidden;
+  cursor: none;
+}
+
+/* ==========================================================================
+   Animações da tela da TV — nada troca de forma brusca.
+   ========================================================================== */
+
+/* O movimento vem do transform; o fade parte de um valor JÁ LEGÍVEL.
+   Se a animação travar (aba estrangulada, TV voltando do segundo plano),
+   o pior caso ainda é texto legível — nunca conteúdo apagado. */
+@keyframes tv-entrada {
+  from {
+    opacity: 0.55;
+    transform: translateY(1.4vh) scale(0.965);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tv-sobe {
+  from {
+    opacity: 0.6;
+    transform: translateY(1vh);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tv-pulso {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes tv-batida {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.035);
+  }
+}
+
+/* Entrada do exercício ao trocar de fase.
+   `forwards` (e nunca `both`): se a animação não chegar a rodar — aba
+   estrangulada, TV voltando do segundo plano — o elemento fica no seu
+   estado natural, VISÍVEL. Informação em tela nunca pode depender de uma
+   animação terminar. */
+.tv-entrada {
+  animation: tv-entrada 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.tv-sobe {
+  animation: tv-sobe 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+/* Alerta de troca iminente */
+.tv-pulso {
+  animation: tv-pulso 1s ease-in-out infinite;
+}
+/* Batida do cronômetro nos segundos finais */
+.tv-batida {
+  animation: tv-batida 1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-entrada,
+  .tv-sobe,
+  .tv-pulso,
+  .tv-batida {
+    animation: none;
+  }
+}
