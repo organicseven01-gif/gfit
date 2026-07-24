@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Modal do painel. Fecha no Escape e no clique fora, trava a rolagem do
- * fundo e devolve o foco ao primeiro campo ao abrir.
+ * fundo e foca o primeiro CAMPO ao abrir.
  */
 export function Modal({
   aberto,
@@ -25,11 +25,20 @@ export function Modal({
 }) {
   const caixaRef = useRef<HTMLDivElement>(null);
 
+  // Guarda o `onFechar` mais recente sem que ele vire dependência do efeito
+  // de abertura. O pai recria essa função a cada tecla; se ela fosse
+  // dependência, o efeito rodaria a cada letra e roubaria o foco do campo.
+  const onFecharRef = useRef(onFechar);
+  useEffect(() => {
+    onFecharRef.current = onFechar;
+  }, [onFechar]);
+
+  // Roda SÓ quando o modal abre/fecha.
   useEffect(() => {
     if (!aberto) return;
 
     const aoTeclar = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onFechar();
+      if (e.key === "Escape") onFecharRef.current();
     };
     document.addEventListener("keydown", aoTeclar);
 
@@ -37,17 +46,18 @@ export function Modal({
     const overflowAnterior = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    // foca o primeiro campo interativo
-    const foco = caixaRef.current?.querySelector<HTMLElement>(
-      "input, select, textarea, button",
+    // foca o primeiro CAMPO (nunca um botão — senão o X do cabeçalho, que
+    // vem antes no DOM, ficaria com o foco e o usuário não conseguiria digitar)
+    const campo = caixaRef.current?.querySelector<HTMLElement>(
+      "input, select, textarea",
     );
-    foco?.focus();
+    campo?.focus();
 
     return () => {
       document.removeEventListener("keydown", aoTeclar);
       document.body.style.overflow = overflowAnterior;
     };
-  }, [aberto, onFechar]);
+  }, [aberto]);
 
   if (!aberto) return null;
 
