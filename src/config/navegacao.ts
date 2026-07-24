@@ -2,7 +2,6 @@ import {
   Home,
   Library,
   LayoutTemplate,
-  History,
   Smartphone,
   Settings,
   Tv,
@@ -40,13 +39,6 @@ export const navegacaoPainel: ItemNavegacao[] = [
     href: "/painel/templates",
     icone: LayoutTemplate,
     descricao: "Modelos prontos para começar rápido",
-  },
-  {
-    titulo: "Histórico",
-    tituloCurto: "Histórico",
-    href: "/painel/historico",
-    icone: History,
-    descricao: "Treinos executados nas telas",
   },
   {
     titulo: "Controle pelo Celular",

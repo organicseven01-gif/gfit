@@ -101,7 +101,7 @@ export default function HomePage() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4">
         {/* TVs no ar */}
         <Card>
           <CardCabecalho className="flex-row items-center justify-between">
@@ -129,26 +129,6 @@ export default function HomePage() {
           </CardConteudo>
         </Card>
 
-        {/* Últimas sessões */}
-        <Card>
-          <CardCabecalho className="flex-row items-center justify-between">
-            <CardTitulo>Últimas sessões</CardTitulo>
-            <Link
-              href="/painel/historico"
-              className="text-xs font-medium text-marca hover:underline"
-            >
-              Ver histórico
-            </Link>
-          </CardCabecalho>
-          <CardConteudo className="space-y-3">
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="flex items-center justify-between gap-3">
-                <Skeleton className="h-3 w-40" />
-                <Skeleton className="h-3 w-16" />
-              </div>
-            ))}
-          </CardConteudo>
-        </Card>
       </div>
     </div>
   );
