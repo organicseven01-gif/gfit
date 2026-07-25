@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import type { DefinicaoModo } from "@/lib/timer/modos";
 import type { Template } from "@/types";
 import { listarTemplates, usarTemplate } from "@/lib/services/templates-service";
+import { criarTreino, atualizarTreino } from "@/lib/services/treinos-service";
+import { etapasDoModo, categoriaDoModo } from "@/lib/timer/modelos";
 import { categoria } from "@/lib/treinos/categorias";
 import { duracaoDasEtapas } from "@/lib/treinos/calculos";
 import { formatarDuracao } from "@/lib/utils";
@@ -37,6 +39,25 @@ export function TemplatesView() {
     else setUsandoId(null);
   }
 
+  // Cria um treino já montado no formato do modo e abre o editor.
+  async function aoUsarModo(modo: DefinicaoModo) {
+    if (usandoId) return;
+    setUsandoId(modo.id);
+    try {
+      const treino = await criarTreino({
+        nome: `Novo treino — ${modo.nome}`,
+        categoria: categoriaDoModo(modo.id),
+      });
+      const etapas = etapasDoModo(modo.id);
+      if (etapas.length > 0) {
+        await atualizarTreino(treino.id, { etapas });
+      }
+      router.push(`/painel/treinos/${treino.id}`);
+    } catch {
+      setUsandoId(null);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -53,7 +74,13 @@ export function TemplatesView() {
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {MODOS_TIMER.map((modo) => (
-            <Link key={modo.id} href="/painel/treinos" className="group block">
+            <button
+              key={modo.id}
+              type="button"
+              onClick={() => aoUsarModo(modo)}
+              disabled={usandoId !== null}
+              className="group block text-left disabled:opacity-60"
+            >
               <Card className="h-full transition-colors group-hover:border-marca">
                 <div className="flex h-full flex-col gap-3 p-5">
                   <div className="flex items-start justify-between gap-3">
@@ -68,12 +95,12 @@ export function TemplatesView() {
                     {modo.descricao}
                   </p>
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium text-texto-fraco group-hover:text-marca">
-                    Usar este modelo
+                    {usandoId === modo.id ? "Criando treino..." : "Usar este modelo"}
                     <ArrowRight className="size-3.5" aria-hidden />
                   </span>
                 </div>
               </Card>
-            </Link>
+            </button>
           ))}
         </div>
       </section>
