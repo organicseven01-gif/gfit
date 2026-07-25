@@ -137,11 +137,29 @@ export interface EstadoTvTreino {
   progressoFase: number;
 }
 
+/**
+ * Uma turma recorrente na agenda semanal da academia.
+ *
+ * Roda nos dias marcados, sempre no mesmo horário. Não tem cronômetro: é só
+ * a grade que a TV usa para anunciar a próxima aula e a aula em andamento.
+ */
+export interface AulaAgendada {
+  id: string;
+  /** "Turma das 6h", "CrossFit", "Funcional". */
+  nome: string;
+  /** Horário de início no formato "HH:MM". */
+  horario: string;
+  /** Dias em que acontece: 0=Dom, 1=Seg … 6=Sáb. */
+  dias: number[];
+  /** Duração em minutos — enquanto durar, a TV mostra o nome se não houver treino. */
+  duracaoMin: number;
+}
+
 export interface EstadoTvAguardando {
   situacao: "aguardando";
-  proximaAula: string;
-  /** Horário da próxima aula no formato "HH:MM". */
-  horario: string;
+  /** Grade semanal de turmas; a TV calcula a próxima e a atual localmente. */
+  agenda: AulaAgendada[];
+  nomeAcademia: string;
 }
 
 export type EstadoTv = EstadoTvTreino | EstadoTvAguardando;
@@ -174,4 +192,6 @@ export interface Configuracoes {
   nomeAcademia: string;
   logoUrl: string | null;
   som: ConfigSom;
+  /** Grade semanal de turmas exibida na TV. */
+  agenda: AulaAgendada[];
 }

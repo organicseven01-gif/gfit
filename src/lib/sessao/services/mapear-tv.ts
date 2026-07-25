@@ -1,4 +1,4 @@
-import type { EstadoTv } from "@/types";
+import type { AulaAgendada, EstadoTv } from "@/types";
 import type { VisaoSessao } from "@/lib/sessao/tipos";
 
 /* ==========================================================================
@@ -9,22 +9,14 @@ import type { VisaoSessao } from "@/lib/sessao/tipos";
    a receber dados vivos em vez de fixos.
    ========================================================================== */
 
-/**
- * Exibido quando não há treino no ar.
- *
- * Ainda não existe módulo de agenda; estes valores são o padrão da tela.
- * O nome não pode repetir o rótulo "PRÓXIMA AULA" que aparece acima dele.
- */
-const AGUARDANDO: EstadoTv = {
-  situacao: "aguardando",
-  proximaAula: "Treino livre",
-  horario: "19:00",
-};
-
-export function visaoParaEstadoTv(visao: VisaoSessao): EstadoTv {
-  // ocioso, encerrado ou sem fase → tela de espera
+export function visaoParaEstadoTv(
+  visao: VisaoSessao,
+  agenda: AulaAgendada[] = [],
+  nomeAcademia = "G FIT",
+): EstadoTv {
+  // ocioso, encerrado ou sem fase → tela de espera com a agenda da academia
   if (visao.status === "ocioso" || visao.concluido || !visao.faseAtual) {
-    return AGUARDANDO;
+    return { situacao: "aguardando", agenda, nomeAcademia };
   }
 
   const f = visao.faseAtual;

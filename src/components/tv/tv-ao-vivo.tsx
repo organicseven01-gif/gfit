@@ -53,7 +53,11 @@ export function TvAoVivo() {
   return (
     <div className="relative h-full w-full">
       <DisplayTv
-        estado={visaoParaEstadoTv(visao)}
+        estado={visaoParaEstadoTv(
+          visao,
+          config?.agenda ?? [],
+          config?.nomeAcademia ?? "G FIT",
+        )}
         patrocinadores={patrocinadores}
       />
 

@@ -11,8 +11,11 @@ export const metadata = { title: "Tela da TV" };
  */
 const AGUARDANDO: EstadoTv = {
   situacao: "aguardando",
-  proximaAula: "CrossFit — WOD",
-  horario: "19:00",
+  nomeAcademia: "G FIT",
+  agenda: [
+    { id: "demo-1", nome: "CrossFit — WOD", horario: "06:00", dias: [1, 2, 3, 4, 5], duracaoMin: 60 },
+    { id: "demo-2", nome: "Funcional", horario: "19:00", dias: [1, 2, 3, 4, 5], duracaoMin: 60 },
+  ],
 };
 
 const EM_TREINO: EstadoTv = {

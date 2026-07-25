@@ -1,6 +1,6 @@
 "use client";
 
-import type { Configuracoes, ConfigSom } from "@/types";
+import type { AulaAgendada, Configuracoes, ConfigSom } from "@/types";
 import type { ConfiguracoesRow } from "@/lib/supabase/tipos-db";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 
@@ -23,7 +23,22 @@ const PADRAO: Configuracoes = {
   nomeAcademia: "G FIT",
   logoUrl: null,
   som: SOM_PADRAO,
+  agenda: [],
 };
+
+/** Normaliza o JSONB da agenda para o tipo do domínio (tolerante a lixo). */
+function paraAgenda(bruto: unknown): AulaAgendada[] {
+  if (!Array.isArray(bruto)) return [];
+  return bruto
+    .filter((a): a is Record<string, unknown> => !!a && typeof a === "object")
+    .map((a) => ({
+      id: String(a.id ?? crypto.randomUUID()),
+      nome: String(a.nome ?? ""),
+      horario: String(a.horario ?? "00:00"),
+      dias: Array.isArray(a.dias) ? a.dias.map(Number).filter((d) => d >= 0 && d <= 6) : [],
+      duracaoMin: Number(a.duracaoMin) > 0 ? Number(a.duracaoMin) : 60,
+    }));
+}
 
 function paraConfig(row: ConfiguracoesRow): Configuracoes {
   return {
@@ -39,6 +54,7 @@ function paraConfig(row: ConfiguracoesRow): Configuracoes {
       contagem: row.som_contagem,
       conclusao: row.som_conclusao,
     },
+    agenda: paraAgenda(row.agenda),
   };
 }
 
@@ -57,6 +73,7 @@ export async function obterConfiguracoes(): Promise<Configuracoes> {
 export async function atualizarConfiguracoes(
   patch: Partial<Pick<Configuracoes, "nomeAcademia" | "logoUrl">> & {
     som?: Partial<ConfigSom>;
+    agenda?: AulaAgendada[];
   },
 ): Promise<void> {
   const sb = criarClienteNavegador();
@@ -64,6 +81,7 @@ export async function atualizarConfiguracoes(
 
   if (patch.nomeAcademia !== undefined) linha.nome_academia = patch.nomeAcademia;
   if (patch.logoUrl !== undefined) linha.logo_url = patch.logoUrl;
+  if (patch.agenda !== undefined) linha.agenda = patch.agenda;
 
   const s = patch.som;
   if (s) {

@@ -5,6 +5,7 @@ import {
   Smartphone,
   Settings,
   Tv,
+  CalendarClock,
   type LucideIcon,
 } from "lucide-react";
 
@@ -39,6 +40,13 @@ export const navegacaoPainel: ItemNavegacao[] = [
     href: "/painel/templates",
     icone: LayoutTemplate,
     descricao: "Modelos prontos para começar rápido",
+  },
+  {
+    titulo: "Agenda",
+    tituloCurto: "Agenda",
+    href: "/painel/agenda",
+    icone: CalendarClock,
+    descricao: "Horários das turmas exibidos na TV",
   },
   {
     titulo: "Controle pelo Celular",

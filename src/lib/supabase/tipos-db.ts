@@ -77,6 +77,8 @@ export interface ConfiguracoesRow {
   som_descanso: boolean;
   som_contagem: boolean;
   som_conclusao: boolean;
+  /** Grade semanal de turmas (array de AulaAgendada). */
+  agenda: unknown;
   atualizado_em: string;
 }
 
