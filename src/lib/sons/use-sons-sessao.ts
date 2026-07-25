@@ -16,31 +16,42 @@ import { tocarSom } from "@/lib/sons/motor-sons";
 export function useSonsSessao(visao: VisaoSessao, som: ConfigSom | null): void {
   const indiceAnterior = useRef<number | null>(null);
   const statusAnterior = useRef<string>("ocioso");
+  const tipoAnterior = useRef<string | null>(null);
   const ultimoTique = useRef<number>(-1);
 
-  // Início do treino, troca de fase e conclusão.
+  // Preparação, início do treino, troca de fase e conclusão.
   useEffect(() => {
     if (!som || !som.ativo) {
       indiceAnterior.current = visao.indice;
       statusAnterior.current = visao.status;
+      tipoAnterior.current = visao.faseAtual?.tipo ?? null;
       return;
     }
     const vol = som.volume;
     const prevStatus = statusAnterior.current;
     const prevIndice = indiceAnterior.current;
+    const prevTipo = tipoAnterior.current;
+    const fase = visao.faseAtual;
 
     if (visao.concluido && prevStatus !== "encerrado") {
       if (som.conclusao) tocarSom("conclusao", vol);
     } else if (visao.status === "rodando") {
       const comecou = prevStatus === "ocioso" || prevStatus === "encerrado";
       if (comecou) {
-        if (som.inicio) tocarSom("inicio", vol);
+        // O treino abre com os 10s de "prepare-se".
+        if (fase?.tipo === "preparacao") {
+          if (som.preparacao) tocarSom("preparacao", vol);
+        } else if (som.inicio) {
+          tocarSom("inicio", vol);
+        }
         ultimoTique.current = -1;
       } else if (visao.indice !== prevIndice) {
         // troca de fase (não dispara em RESUME, que mantém o índice)
-        const fase = visao.faseAtual;
         if (fase?.tipo === "descanso") {
           if (som.descanso) tocarSom("descanso", vol);
+        } else if (prevTipo === "preparacao") {
+          // saiu da preparação → agora o treino vale de fato
+          if (som.inicio) tocarSom("inicio", vol);
         } else if (som.troca) {
           tocarSom("troca", vol);
         }
@@ -50,6 +61,7 @@ export function useSonsSessao(visao: VisaoSessao, som: ConfigSom | null): void {
 
     indiceAnterior.current = visao.indice;
     statusAnterior.current = visao.status;
+    tipoAnterior.current = fase?.tipo ?? null;
   }, [visao.status, visao.indice, visao.concluido, visao.faseAtual, som]);
 
   // Contagem regressiva 3-2-1 nos segundos finais da fase.

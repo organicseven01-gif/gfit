@@ -35,7 +35,12 @@ export function visaoParaEstadoTv(visao: VisaoSessao): EstadoTv {
     situacao: "treino",
     exercicio: nomeDe(f),
     proximoExercicio: visao.proximaFase ? nomeDe(visao.proximaFase) : null,
-    fase: f.tipo === "descanso" ? "descanso" : "trabalho",
+    fase:
+      f.tipo === "descanso"
+        ? "descanso"
+        : f.tipo === "preparacao"
+          ? "preparar"
+          : "trabalho",
     round: f.round,
     totalRounds: f.totalRounds,
     restanteMs: visao.restanteMs,

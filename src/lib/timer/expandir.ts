@@ -1,12 +1,15 @@
 import type { Etapa, TipoEtapa } from "@/types";
 
+/** Contagem regressiva de "prepare-se" no começo de todo treino (segundos). */
+export const PREPARACAO_SEGUNDOS = 10;
+
 /** Uma ocorrência concreta de etapa na linha do tempo do treino. */
 export interface Fase {
   /** Único por ocorrência — a mesma etapa repetida gera ids diferentes. */
   id: string;
   etapaId: string;
   nome: string;
-  tipo: Exclude<TipoEtapa, "repetir">;
+  tipo: "exercicio" | "descanso" | "preparacao";
   segundos: number;
   /** Round em que esta ocorrência acontece (1-based). */
   round: number;
@@ -20,7 +23,11 @@ export interface Fase {
  * ou desde o "repetir" anterior). O que vier depois do último "repetir"
  * acontece uma vez só — mesma regra de `duracaoDasEtapas`.
  */
-export function expandirEtapas(etapas: Etapa[]): Fase[] {
+export function expandirEtapas(
+  etapas: Etapa[],
+  opcoes: { preparacaoSegundos?: number } = {},
+): Fase[] {
+  const preparacaoSegundos = opcoes.preparacaoSegundos ?? PREPARACAO_SEGUNDOS;
   const fases: Fase[] = [];
   let segmento: Etapa[] = [];
 
@@ -49,6 +56,19 @@ export function expandirEtapas(etapas: Etapa[]): Fase[] {
     }
   }
   despejar(1);
+
+  // "Prepare-se": 10s de contagem regressiva antes do treino valer, uma vez.
+  if (preparacaoSegundos > 0 && fases.length > 0) {
+    fases.unshift({
+      id: "preparacao#0",
+      etapaId: "preparacao",
+      nome: "Prepare-se",
+      tipo: "preparacao",
+      segundos: preparacaoSegundos,
+      round: 1,
+      totalRounds: fases[0].totalRounds,
+    });
+  }
 
   return fases;
 }

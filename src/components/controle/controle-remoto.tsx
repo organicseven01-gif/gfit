@@ -27,6 +27,7 @@ const AJUSTE_SEGUNDOS = 10;
 const COR_FASE = {
   exercicio: "var(--color-trabalho)",
   descanso: "var(--color-descanso)",
+  preparacao: "var(--color-preparar)",
 } as const;
 
 /**
