@@ -13,11 +13,14 @@ import {
   ArrowLeft,
   RotateCcw,
 } from "lucide-react";
-import type { Treino } from "@/types";
+import type { Configuracoes, Treino } from "@/types";
 import { obterTreino } from "@/lib/services/treinos-service";
+import { obterConfiguracoes } from "@/lib/services/configuracoes-service";
 import { expandirEtapas, type Fase } from "@/lib/timer/expandir";
 import { useSessao } from "@/lib/sessao/hooks/use-sessao";
 import { useVisaoSessao } from "@/lib/sessao/hooks/use-visao-sessao";
+import { useSonsSessao } from "@/lib/sons/use-sons-sessao";
+import { desbloquearSom } from "@/lib/sons/motor-sons";
 import { formatarTempo } from "@/lib/utils";
 import { BotaoControle } from "@/components/controle/botao-controle";
 
@@ -37,16 +40,24 @@ const COR_FASE = {
  */
 export function ControleRemoto({ treinoId }: { treinoId: string }) {
   const [treino, setTreino] = useState<Treino | null>(null);
+  const [config, setConfig] = useState<Configuracoes | null>(null);
   const [carregando, setCarregando] = useState(true);
 
   const { estado, despachar } = useSessao();
   const visao = useVisaoSessao();
+
+  // Toca os bipes também no celular — como o coach interage aqui (toques),
+  // o áudio já está liberado, então dá pra ouvir na hora sem depender da TV.
+  useSonsSessao(visao, config?.som ?? null);
 
   useEffect(() => {
     obterTreino(treinoId).then((t) => {
       setTreino(t);
       setCarregando(false);
     });
+    obterConfiguracoes()
+      .then(setConfig)
+      .catch(() => setConfig(null));
   }, [treinoId]);
 
   // Prévia local do treino carregado, para o visor mostrar a primeira etapa
@@ -99,6 +110,7 @@ export function ControleRemoto({ treinoId }: { treinoId: string }) {
 
   // Ação do botão principal conforme a situação.
   const aoTocarPrincipal = () => {
+    desbloquearSom(); // este toque libera o áudio do celular
     if (rodando) despachar({ tipo: "PAUSE" });
     else if (pausado) despachar({ tipo: "RESUME" });
     else if (treino) despachar({ tipo: "START", treino }); // ocioso ou encerrado
@@ -173,6 +185,13 @@ export function ControleRemoto({ treinoId }: { treinoId: string }) {
           backgroundColor: `color-mix(in srgb, ${corFase} 10%, transparent)`,
         }}
       >
+        {/* Espelha a TV: mesmo round, mesma fase, mesmo tempo. */}
+        {faseAtual && !concluido && faseAtual.totalRounds > 1 && (
+          <p className="text-xs font-bold tracking-[0.2em] text-texto-fraco uppercase">
+            Round {faseAtual.round} de {faseAtual.totalRounds}
+          </p>
+        )}
+
         <p
           className="text-sm font-bold tracking-[0.2em] uppercase"
           style={{ color: corFase }}

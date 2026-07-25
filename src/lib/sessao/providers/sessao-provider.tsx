@@ -22,6 +22,20 @@ interface ContextoSessao {
 const Contexto = createContext<ContextoSessao | null>(null);
 
 /**
+ * Rebaseia o cronômetro no relógio LOCAL de quem recebe.
+ *
+ * O estado viaja com `restanteMs` (quanto falta, um DELTA) — não confiamos no
+ * `fimPrevistoEpoch` do remetente, que é um horário absoluto do relógio DELE.
+ * Se o celular e a TV/notebook têm relógios levemente diferentes (comum), usar
+ * o horário absoluto do outro faz os cronômetros divergirem. Recalculando o
+ * fim a partir do relógio local, toda tela mostra o MESMO tempo.
+ */
+function rebasearRelogio(e: EstadoSessao, agora: number): EstadoSessao {
+  if (e.status !== "rodando") return e;
+  return { ...e, fimPrevistoEpoch: agora + Math.max(0, e.restanteMs) };
+}
+
+/**
  * Provider da sessão sincronizada.
  *
  * - `controlador` (painel, controle): pode despachar ações; hospeda o laço de
@@ -61,7 +75,8 @@ export function SessaoProvider({
       // last-writer-wins por horário (epoch): unifica broadcast ao vivo e
       // hidratação do banco, que usam relógios/contadores diferentes.
       if (recebido.atualizadoEm >= estadoRef.current.atualizadoEm) {
-        aplicar(recebido);
+        // rebaseia no relógio local para o tempo bater em todas as telas
+        aplicar(rebasearRelogio(recebido, Date.now()));
       }
     });
     return () => {
