@@ -151,14 +151,13 @@ function ModoProxima({
   faltaMs: number;
   alerta: boolean;
 }) {
-  const { h, m, s } = partes(faltaMs);
-  const cor = alerta ? "text-preparar" : "text-marca";
+  const { m, s } = partes(faltaMs);
 
   return (
     <>
       <span
-        className={`text-[1vw] font-bold tracking-[0.4em] ${cor} ${
-          alerta ? "tv-pulso" : ""
+        className={`text-[1vw] font-bold tracking-[0.4em] ${
+          alerta ? "text-preparar tv-pulso" : "text-marca"
         }`}
       >
         {alerta ? "PRÓXIMA TURMA COMEÇANDO" : "PRÓXIMA AULA"}
@@ -171,47 +170,21 @@ function ModoProxima({
         {proxima.nome}
       </p>
 
-      <p className="numeros-timer text-[2.8vw] leading-none font-bold text-texto-suave tabular-nums">
-        {horarioDe(proxima.inicio)}
-      </p>
-
-      {/* Aviso de ≤ 10 min: só minutos e segundos, bem grande */}
       {alerta ? (
-        <div className="mt-[1vh] flex flex-col items-center gap-[0.6vh]">
+        /* Últimos 10 min: contagem regressiva grande, em âmbar */
+        <div className="mt-[1vh] flex flex-col items-center gap-[0.8vh]">
           <span className="text-[0.9vw] font-bold tracking-[0.35em] text-texto-fraco">
             COMEÇA EM
           </span>
-          <span className="numeros-timer text-[9vw] leading-[0.85] font-extrabold text-preparar tabular-nums">
+          <span className="numeros-timer text-[10vw] leading-[0.85] font-extrabold text-preparar tabular-nums">
             {pad(m)}:{pad(s)}
           </span>
         </div>
       ) : (
-        <div className="mt-[1.5vh] flex items-start gap-[1vw]">
-          {[
-            { valor: h, rotulo: "HORAS" },
-            { valor: m, rotulo: "MIN" },
-            { valor: s, rotulo: "SEG" },
-          ].map(({ valor, rotulo }, i) => (
-            <div key={rotulo} className="flex items-start gap-[1vw]">
-              {i > 0 && (
-                <span
-                  aria-hidden
-                  className="numeros-timer text-[6vw] leading-[0.85] font-extrabold text-texto-fraco/30"
-                >
-                  :
-                </span>
-              )}
-              <div className="flex flex-col items-center gap-[0.8vh]">
-                <span className="numeros-timer text-[8vw] leading-[0.85] font-extrabold text-marca tabular-nums">
-                  {pad(valor)}
-                </span>
-                <span className="text-[0.85vw] font-bold tracking-[0.35em] text-texto-fraco">
-                  {rotulo}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        /* Fora dos 10 min: só o horário, grande e amarelo (sem contagem) */
+        <span className="numeros-timer mt-[0.5vh] text-[8vw] leading-[0.85] font-extrabold text-marca tabular-nums">
+          {horarioDe(proxima.inicio)}
+        </span>
       )}
     </>
   );
