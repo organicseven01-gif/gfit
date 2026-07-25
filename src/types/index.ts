@@ -146,11 +146,32 @@ export interface EstadoTvAguardando {
 
 export type EstadoTv = EstadoTvTreino | EstadoTvAguardando;
 
+/** Eventos sonoros do treino. */
+export type EventoSom =
+  | "inicio"
+  | "preparacao"
+  | "troca"
+  | "descanso"
+  | "contagem"
+  | "conclusao";
+
+/** Preferências de som. */
+export interface ConfigSom {
+  /** Liga/desliga todos os sons de uma vez. */
+  ativo: boolean;
+  /** 0 a 100. */
+  volume: number;
+  inicio: boolean;
+  preparacao: boolean;
+  troca: boolean;
+  descanso: boolean;
+  contagem: boolean;
+  conclusao: boolean;
+}
+
 /** Configurações da unidade, únicas por instalação. */
 export interface Configuracoes {
   nomeAcademia: string;
   logoUrl: string | null;
-  somBipeFinal: boolean;
-  somViradaFase: boolean;
-  somConclusao: boolean;
+  som: ConfigSom;
 }

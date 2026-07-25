@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, Palette, Volume2, MonitorPlay, Plus } from "lucide-react";
+import { Building2, Palette, MonitorPlay, Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   Card,
@@ -12,6 +12,7 @@ import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SecaoSom } from "@/components/painel/secao-som";
 
 export const metadata = { title: "Configurações" };
 
@@ -108,32 +109,8 @@ export default function ConfiguracoesPage() {
           </CardConteudo>
         </Card>
 
-        {/* Som */}
-        <Card>
-          <CardCabecalho>
-            <CardTitulo className="flex items-center gap-2">
-              <Volume2 className="size-4 text-texto-fraco" aria-hidden />
-              Som
-            </CardTitulo>
-            <CardDescricao>
-              Avisos sonoros de virada de fase e contagem final.
-            </CardDescricao>
-          </CardCabecalho>
-          <CardConteudo className="space-y-3">
-            {["Bipe nos 3 segundos finais", "Sinal de virada de fase", "Sinal de conclusão"].map(
-              (opcao) => (
-                <div
-                  key={opcao}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-borda bg-superficie-2 p-3"
-                >
-                  <span className="text-sm text-texto-suave">{opcao}</span>
-                  <div className="h-5 w-9 rounded-full bg-borda" aria-hidden />
-                </div>
-              ),
-            )}
-          </CardConteudo>
-        </Card>
-
+        {/* Som — funcional */}
+        <SecaoSom />
       </div>
     </div>
   );

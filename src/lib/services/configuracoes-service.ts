@@ -1,6 +1,6 @@
 "use client";
 
-import type { Configuracoes } from "@/types";
+import type { Configuracoes, ConfigSom } from "@/types";
 import type { ConfiguracoesRow } from "@/lib/supabase/tipos-db";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 
@@ -8,21 +8,37 @@ import { criarClienteNavegador } from "@/lib/supabase/client";
    Configurações da unidade (Supabase, tabela `configuracoes`, linha única).
    ========================================================================== */
 
+const SOM_PADRAO: ConfigSom = {
+  ativo: true,
+  volume: 70,
+  inicio: true,
+  preparacao: true,
+  troca: true,
+  descanso: true,
+  contagem: true,
+  conclusao: true,
+};
+
 const PADRAO: Configuracoes = {
   nomeAcademia: "G FIT",
   logoUrl: null,
-  somBipeFinal: true,
-  somViradaFase: true,
-  somConclusao: true,
+  som: SOM_PADRAO,
 };
 
 function paraConfig(row: ConfiguracoesRow): Configuracoes {
   return {
     nomeAcademia: row.nome_academia,
     logoUrl: row.logo_url,
-    somBipeFinal: row.som_bipe_final,
-    somViradaFase: row.som_virada_fase,
-    somConclusao: row.som_conclusao,
+    som: {
+      ativo: row.som_ativo,
+      volume: row.som_volume,
+      inicio: row.som_inicio,
+      preparacao: row.som_preparacao,
+      troca: row.som_troca,
+      descanso: row.som_descanso,
+      contagem: row.som_contagem,
+      conclusao: row.som_conclusao,
+    },
   };
 }
 
@@ -39,15 +55,29 @@ export async function obterConfiguracoes(): Promise<Configuracoes> {
 }
 
 export async function atualizarConfiguracoes(
-  patch: Partial<Configuracoes>,
+  patch: Partial<Pick<Configuracoes, "nomeAcademia" | "logoUrl">> & {
+    som?: Partial<ConfigSom>;
+  },
 ): Promise<void> {
   const sb = criarClienteNavegador();
   const linha: Record<string, unknown> = {};
+
   if (patch.nomeAcademia !== undefined) linha.nome_academia = patch.nomeAcademia;
   if (patch.logoUrl !== undefined) linha.logo_url = patch.logoUrl;
-  if (patch.somBipeFinal !== undefined) linha.som_bipe_final = patch.somBipeFinal;
-  if (patch.somViradaFase !== undefined) linha.som_virada_fase = patch.somViradaFase;
-  if (patch.somConclusao !== undefined) linha.som_conclusao = patch.somConclusao;
+
+  const s = patch.som;
+  if (s) {
+    if (s.ativo !== undefined) linha.som_ativo = s.ativo;
+    if (s.volume !== undefined) linha.som_volume = s.volume;
+    if (s.inicio !== undefined) linha.som_inicio = s.inicio;
+    if (s.preparacao !== undefined) linha.som_preparacao = s.preparacao;
+    if (s.troca !== undefined) linha.som_troca = s.troca;
+    if (s.descanso !== undefined) linha.som_descanso = s.descanso;
+    if (s.contagem !== undefined) linha.som_contagem = s.contagem;
+    if (s.conclusao !== undefined) linha.som_conclusao = s.conclusao;
+  }
+
+  if (Object.keys(linha).length === 0) return;
 
   const { error } = await sb.from("configuracoes").update(linha).eq("id", 1);
   if (error) throw error;

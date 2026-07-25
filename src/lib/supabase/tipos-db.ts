@@ -69,8 +69,13 @@ export interface ConfiguracoesRow {
   id: number;
   nome_academia: string;
   logo_url: string | null;
-  som_bipe_final: boolean;
-  som_virada_fase: boolean;
+  som_ativo: boolean;
+  som_volume: number;
+  som_inicio: boolean;
+  som_preparacao: boolean;
+  som_troca: boolean;
+  som_descanso: boolean;
+  som_contagem: boolean;
   som_conclusao: boolean;
   atualizado_em: string;
 }
