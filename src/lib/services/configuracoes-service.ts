@@ -24,7 +24,18 @@ const PADRAO: Configuracoes = {
   logoUrl: null,
   som: SOM_PADRAO,
   agenda: [],
+  treinosDoDia: {},
 };
+
+/** Normaliza o mapa "YYYY-MM-DD" -> treinoId (tolerante a lixo). */
+function paraTreinosDoDia(bruto: unknown): Record<string, string> {
+  if (!bruto || typeof bruto !== "object" || Array.isArray(bruto)) return {};
+  const saida: Record<string, string> = {};
+  for (const [data, id] of Object.entries(bruto as Record<string, unknown>)) {
+    if (typeof id === "string" && id) saida[data] = id;
+  }
+  return saida;
+}
 
 /** Normaliza o JSONB da agenda para o tipo do domínio (tolerante a lixo). */
 function paraAgenda(bruto: unknown): AulaAgendada[] {
@@ -55,6 +66,7 @@ function paraConfig(row: ConfiguracoesRow): Configuracoes {
       conclusao: row.som_conclusao,
     },
     agenda: paraAgenda(row.agenda),
+    treinosDoDia: paraTreinosDoDia(row.treinos_do_dia),
   };
 }
 
@@ -74,6 +86,7 @@ export async function atualizarConfiguracoes(
   patch: Partial<Pick<Configuracoes, "nomeAcademia" | "logoUrl">> & {
     som?: Partial<ConfigSom>;
     agenda?: AulaAgendada[];
+    treinosDoDia?: Record<string, string>;
   },
 ): Promise<void> {
   const sb = criarClienteNavegador();
@@ -82,6 +95,7 @@ export async function atualizarConfiguracoes(
   if (patch.nomeAcademia !== undefined) linha.nome_academia = patch.nomeAcademia;
   if (patch.logoUrl !== undefined) linha.logo_url = patch.logoUrl;
   if (patch.agenda !== undefined) linha.agenda = patch.agenda;
+  if (patch.treinosDoDia !== undefined) linha.treinos_do_dia = patch.treinosDoDia;
 
   const s = patch.som;
   if (s) {

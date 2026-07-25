@@ -194,4 +194,6 @@ export interface Configuracoes {
   som: ConfigSom;
   /** Grade semanal de turmas exibida na TV. */
   agenda: AulaAgendada[];
+  /** Treino de cada dia: mapa "YYYY-MM-DD" → id do treino. */
+  treinosDoDia: Record<string, string>;
 }

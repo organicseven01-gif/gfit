@@ -79,6 +79,8 @@ export interface ConfiguracoesRow {
   som_conclusao: boolean;
   /** Grade semanal de turmas (array de AulaAgendada). */
   agenda: unknown;
+  /** Treino de cada dia (mapa "YYYY-MM-DD" -> id do treino). */
+  treinos_do_dia: unknown;
   atualizado_em: string;
 }
 

@@ -21,6 +21,22 @@ const MS_MIN = 60_000;
 /** Rótulos dos dias (0=Dom … 6=Sáb). */
 export const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"] as const;
 
+/** Data local no formato "YYYY-MM-DD" (chave do treino do dia). */
+export function dataLocalISO(d: Date = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** Os próximos `n` dias a partir de hoje (para o planejador). */
+export function proximosDias(n: number, base: Date = new Date()): Date[] {
+  return Array.from({ length: n }, (_, i) => {
+    const d = new Date(base);
+    d.setDate(d.getDate() + i);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
+}
+
 /**
  * Todas as ocorrências concretas da grade numa janela de -1 a +7 dias,
  * ordenadas por horário de início. Cobre a virada da semana com folga.
