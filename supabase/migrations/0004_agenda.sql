@@ -12,3 +12,7 @@
 
 alter table configuracoes
   add column if not exists agenda jsonb not null default '[]'::jsonb;
+
+-- Recarrega o cache de schema do PostgREST: sem isso, a API pode continuar
+-- respondendo "column agenda não encontrada" logo após criar a coluna.
+notify pgrst, 'reload schema';

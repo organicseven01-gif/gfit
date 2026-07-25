@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Plus, Trash2, Check, Loader2, CalendarClock } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Check,
+  Loader2,
+  CalendarClock,
+  TriangleAlert,
+} from "lucide-react";
 import type { AulaAgendada } from "@/types";
 import {
   obterConfiguracoes,
@@ -33,6 +40,7 @@ function novaAula(): AulaAgendada {
 export function AgendaEditor() {
   const [aulas, setAulas] = useState<AulaAgendada[] | null>(null);
   const [salvo, setSalvo] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -44,12 +52,23 @@ export function AgendaEditor() {
   // salva a grade inteira, com debounce (o usuário edita vários campos seguidos)
   function persistir(lista: AulaAgendada[]) {
     setSalvo(false);
+    setErro(null);
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       try {
         await atualizarConfiguracoes({ agenda: lista });
-      } finally {
         setSalvo(true);
+      } catch (e) {
+        // não esconder a falha: mostrar o motivo real (ex.: coluna ausente).
+        // Erros do Supabase são objetos { message, code, ... }, não Error.
+        const msg =
+          e instanceof Error
+            ? e.message
+            : e && typeof e === "object" && "message" in e
+              ? String((e as { message: unknown }).message)
+              : String(e);
+        setErro(msg);
+        setSalvo(false);
       }
     }, 600);
   }
@@ -85,7 +104,12 @@ export function AgendaEditor() {
           </CardDescricao>
         </div>
         <span className="flex items-center gap-1.5 text-xs text-texto-fraco">
-          {salvo ? (
+          {erro ? (
+            <>
+              <TriangleAlert className="size-3.5 text-descanso" aria-hidden />
+              Não salvou
+            </>
+          ) : salvo ? (
             <>
               <Check className="size-3.5 text-trabalho" aria-hidden />
               Salvo
@@ -100,6 +124,23 @@ export function AgendaEditor() {
       </CardCabecalho>
 
       <CardConteudo className="space-y-4">
+        {erro && (
+          <div className="flex items-start gap-2.5 rounded-lg border border-descanso/40 bg-descanso/10 p-3 text-sm text-texto">
+            <TriangleAlert className="mt-0.5 size-4 shrink-0 text-descanso" aria-hidden />
+            <div className="space-y-1">
+              <p className="font-semibold">Não foi possível salvar a agenda.</p>
+              {/agenda|column|schema cache|PGRST/i.test(erro) ? (
+                <p className="text-texto-suave">
+                  A coluna <code className="text-marca">agenda</code> ainda não
+                  existe no banco. Rode o SQL da migration no Supabase (SQL
+                  Editor) e tente de novo.
+                </p>
+              ) : (
+                <p className="text-texto-suave">{erro}</p>
+              )}
+            </div>
+          </div>
+        )}
         {aulas === null ? (
           <div className="space-y-3">
             {[1, 2, 3].map((n) => (
