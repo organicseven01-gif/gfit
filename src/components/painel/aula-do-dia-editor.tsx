@@ -37,6 +37,16 @@ const DIAS_A_PLANEJAR = 7;
 const ehBloco = (m: ModoTimer) =>
   m === "amrap" || m === "for_time" || m === "relogio";
 
+/** Nome padrão de cada modo (usado enquanto o professor não renomeia). */
+const NOME_PADRAO: Record<ModoTimer, string> = {
+  relogio: "Relógio",
+  tabata: "Tabata",
+  for_time: "For Time",
+  emom: "EMOM",
+  amrap: "AMRAP",
+};
+const NOMES_PADRAO = Object.values(NOME_PADRAO);
+
 function rotuloDia(d: Date, i: number): string {
   if (i === 0) return "Hoje";
   if (i === 1) return "Amanhã";
@@ -116,8 +126,11 @@ export function AulaDoDiaEditor() {
 
   function trocarModo(p: AulaParte, modo: ModoTimer) {
     const etapas = etapasDoModo(modo);
-    if (ehBloco(modo) && etapas[0]) etapas[0].nome = p.nome || etapas[0].nome;
-    editar(p.id, { modo, etapas });
+    // se o nome ainda é um padrão (não foi customizado), acompanha o novo modo
+    const nome =
+      !p.nome || NOMES_PADRAO.includes(p.nome) ? NOME_PADRAO[modo] : p.nome;
+    if (ehBloco(modo) && etapas[0]) etapas[0].nome = nome;
+    editar(p.id, { modo, nome, etapas });
   }
 
   function trocarNome(p: AulaParte, nome: string) {
