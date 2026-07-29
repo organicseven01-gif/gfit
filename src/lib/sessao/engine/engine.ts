@@ -160,6 +160,8 @@ export function derivarVisao(
   }
 
   const progresso = dur > 0 ? Math.min(1, Math.max(0, 1 - restanteMs / dur)) : 0;
+  const progressivo = faseAtual?.progressivo ?? false;
+  const decorridoMs = Math.max(0, dur - restanteMs);
 
   return {
     status: estado.status,
@@ -169,6 +171,8 @@ export function derivarVisao(
     faseAtual,
     proximaFase,
     restanteMs: concluido ? 0 : restanteMs,
+    decorridoMs: concluido ? dur : decorridoMs,
+    progressivo,
     progresso: concluido ? 1 : progresso,
     concluido,
   };

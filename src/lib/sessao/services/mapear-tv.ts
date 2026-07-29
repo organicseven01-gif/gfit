@@ -36,6 +36,8 @@ export function visaoParaEstadoTv(
     round: f.round,
     totalRounds: f.totalRounds,
     restanteMs: visao.restanteMs,
+    decorridoMs: visao.decorridoMs,
+    progressivo: visao.progressivo,
     progressoFase: visao.progresso,
   };
 }

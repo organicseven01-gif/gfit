@@ -11,14 +11,15 @@ function etapa(
   tipo: Etapa["tipo"],
   nome: string,
   segundos: number,
-  vezes?: number,
+  opcoes: { vezes?: number; progressivo?: boolean } = {},
 ): Etapa {
   return {
     id: crypto.randomUUID(),
     tipo,
     nome,
     segundos,
-    ...(vezes != null ? { vezes } : {}),
+    ...(opcoes.vezes != null ? { vezes: opcoes.vezes } : {}),
+    ...(opcoes.progressivo ? { progressivo: true } : {}),
   };
 }
 
@@ -29,19 +30,19 @@ export function etapasDoModo(modo: ModoTimer): Etapa[] {
       return [
         etapa("exercicio", "Exercício", 20),
         etapa("descanso", "Descanso", 10),
-        etapa("repetir", "Repetir", 0, 8),
+        etapa("repetir", "Repetir", 0, { vezes: 8 }),
       ];
     case "emom": // um round por minuto, 10 minutos
       return [
         etapa("exercicio", "Exercício", 60),
-        etapa("repetir", "Repetir", 0, 10),
+        etapa("repetir", "Repetir", 0, { vezes: 10 }),
       ];
-    case "amrap": // bloco único de 20 minutos
+    case "amrap": // bloco único de 20 minutos (regressivo)
       return [etapa("exercicio", "AMRAP", 20 * 60)];
-    case "for_time": // time cap de 20 minutos
-      return [etapa("exercicio", "For Time", 20 * 60)];
-    case "relogio": // bloco simples de 10 minutos
-      return [etapa("exercicio", "Cronômetro", 10 * 60)];
+    case "for_time": // conta PRA CIMA até o time cap de 20 min
+      return [etapa("exercicio", "For Time", 20 * 60, { progressivo: true })];
+    case "relogio": // cronômetro contando pra cima (cap de 20 min)
+      return [etapa("exercicio", "Cronômetro", 20 * 60, { progressivo: true })];
   }
 }
 

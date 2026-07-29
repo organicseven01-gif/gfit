@@ -79,7 +79,7 @@ export function PainelTreino({ estado }: { estado: EstadoTvTreino }) {
         >
           {/* Os dois-pontos ocupam uma célula inteira na fonte monoespaçada;
               puxamos as laterais para o número respirar como em painel de TV. */}
-          {formatarTempo(estado.restanteMs)
+          {formatarTempo(estado.progressivo ? estado.decorridoMs : estado.restanteMs)
             .split(":")
             .flatMap((parte, i) =>
               i === 0

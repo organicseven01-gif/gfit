@@ -89,7 +89,7 @@ export function ControleAula() {
   const pausado = estado.status === "pausado";
   const concluido = visao.concluido;
   const faseAtual = visao.faseAtual;
-  const restanteMs = visao.restanteMs;
+  const tempoMostrar = visao.progressivo ? visao.decorridoMs : visao.restanteMs;
 
   const corFase =
     faseAtual && !concluido
@@ -212,7 +212,7 @@ export function ControleAula() {
         </p>
 
         <p className="numeros-timer text-7xl leading-none font-extrabold text-texto">
-          {formatarTempo(parteAtiva ? restanteMs : 0)}
+          {formatarTempo(parteAtiva ? tempoMostrar : 0)}
         </p>
 
         <p className="mt-1 h-5 text-sm text-texto-fraco">

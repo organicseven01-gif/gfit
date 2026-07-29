@@ -55,6 +55,7 @@ function paraEtapa(bruto: unknown): Etapa | null {
     nome: String(e.nome ?? ""),
     segundos: Number(e.segundos) || 0,
     ...(e.vezes != null ? { vezes: Number(e.vezes) || 1 } : {}),
+    ...(e.progressivo ? { progressivo: true } : {}),
   };
 }
 

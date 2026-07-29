@@ -26,6 +26,8 @@ const EM_TREINO: EstadoTv = {
   round: 3,
   totalRounds: 8,
   restanteMs: 83_000,
+  decorridoMs: 37_000,
+  progressivo: false,
   progressoFase: 0.62,
 };
 

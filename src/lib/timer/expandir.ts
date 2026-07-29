@@ -14,6 +14,8 @@ export interface Fase {
   /** Round em que esta ocorrência acontece (1-based). */
   round: number;
   totalRounds: number;
+  /** Conta pra cima (tempo decorrido) em vez de regressivo. */
+  progressivo: boolean;
 }
 
 /**
@@ -42,6 +44,7 @@ export function expandirEtapas(
           segundos: etapa.segundos,
           round,
           totalRounds: vezes,
+          progressivo: etapa.progressivo ?? false,
         });
       }
     }
@@ -67,6 +70,7 @@ export function expandirEtapas(
       segundos: preparacaoSegundos,
       round: 1,
       totalRounds: fases[0].totalRounds,
+      progressivo: false,
     });
   }
 

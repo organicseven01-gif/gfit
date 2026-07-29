@@ -74,6 +74,10 @@ export function ControleRemoto({ treinoId }: { treinoId: string }) {
   const restanteMs = emSessao
     ? visao.restanteMs
     : (fasesLocais[0]?.segundos ?? 0) * 1000;
+  const progressivo = emSessao
+    ? visao.progressivo
+    : (fasesLocais[0]?.progressivo ?? false);
+  const tempoMostrar = progressivo ? visao.decorridoMs : restanteMs;
   const indice = emSessao ? visao.indice : 0;
   const totalFases = emSessao ? visao.totalFases : fasesLocais.length;
 
@@ -206,7 +210,7 @@ export function ControleRemoto({ treinoId }: { treinoId: string }) {
         </p>
 
         <p className="numeros-timer text-7xl leading-none font-extrabold text-texto">
-          {formatarTempo(restanteMs)}
+          {formatarTempo(tempoMostrar)}
         </p>
 
         <p className="mt-1 h-5 text-sm text-texto-fraco">

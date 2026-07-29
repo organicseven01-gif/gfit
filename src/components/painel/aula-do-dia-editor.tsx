@@ -54,6 +54,50 @@ function rotuloDia(d: Date, i: number): string {
   return `${DIAS_SEMANA[d.getDay()]} ${p(d.getDate())}`;
 }
 
+/** Segundos da 1ª etapa de um tipo (0 se não houver). */
+const segDe = (p: AulaParte, tipo: Etapa["tipo"]) =>
+  p.etapas.find((e) => e.tipo === tipo)?.segundos ?? 0;
+/** Repetições (rounds) da etapa "repetir". */
+const vezesDe = (p: AulaParte) =>
+  p.etapas.find((e) => e.tipo === "repetir")?.vezes ?? 1;
+
+/** Campo numérico compacto e padronizado. */
+function CampoNum({
+  rotulo,
+  valor,
+  onChange,
+  min = 0,
+  max = 600,
+  step = 1,
+}: {
+  rotulo: string;
+  valor: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+}) {
+  return (
+    <label className="space-y-1.5">
+      <span className="block text-xs font-semibold tracking-wide text-texto-suave uppercase">
+        {rotulo}
+      </span>
+      <input
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        value={valor}
+        onChange={(e) => {
+          const n = Number(e.target.value);
+          onChange(Math.max(min, Number.isFinite(n) ? n : min));
+        }}
+        className="h-11 w-24 rounded-lg border border-borda bg-superficie px-3 text-sm text-texto focus:border-marca focus:outline-none"
+      />
+    </label>
+  );
+}
+
 function novaParte(): AulaParte {
   return {
     id: crypto.randomUUID(),
@@ -147,6 +191,17 @@ export function AulaDoDiaEditor() {
       { ...p.etapas[0], segundos: Math.max(1, min) * 60 },
     ];
     editar(p.id, { etapas });
+  }
+
+  // Atualiza uma etapa por tipo (rounds/trabalho/descanso do Tabata e EMOM).
+  function setCampoEtapa(
+    p: AulaParte,
+    tipo: Etapa["tipo"],
+    patch: Partial<Etapa>,
+  ) {
+    editar(p.id, {
+      etapas: p.etapas.map((e) => (e.tipo === tipo ? { ...e, ...patch } : e)),
+    });
   }
 
   const dias = proximosDias(DIAS_A_PLANEJAR);
@@ -310,28 +365,62 @@ export function AulaDoDiaEditor() {
                       </select>
                     </label>
 
-                    {duracaoMin !== null ? (
-                      <label className="space-y-1.5">
-                        <span className="block text-xs font-semibold tracking-wide text-texto-suave uppercase">
-                          Duração (min)
-                        </span>
-                        <input
-                          type="number"
+                    {ehBloco(p.modo) && (
+                      <CampoNum
+                        rotulo="Duração (min)"
+                        valor={duracaoMin ?? 1}
+                        min={1}
+                        max={120}
+                        onChange={(v) => trocarDuracao(p, v)}
+                      />
+                    )}
+
+                    {p.modo === "tabata" && (
+                      <>
+                        <CampoNum
+                          rotulo="Rounds"
+                          valor={vezesDe(p)}
                           min={1}
-                          max={120}
-                          value={duracaoMin}
-                          onChange={(e) =>
-                            trocarDuracao(p, Number(e.target.value) || 1)
-                          }
-                          className="h-11 w-28 rounded-lg border border-borda bg-superficie px-3 text-sm text-texto focus:border-marca focus:outline-none"
+                          max={50}
+                          onChange={(v) => setCampoEtapa(p, "repetir", { vezes: v })}
                         />
-                      </label>
-                    ) : (
-                      <p className="pb-3 text-xs text-texto-fraco">
-                        {p.modo === "tabata"
-                          ? "8 rounds · 20s / 10s (ajuste fino em breve)"
-                          : "10 rounds · 1 min cada (ajuste fino em breve)"}
-                      </p>
+                        <CampoNum
+                          rotulo="Trabalho (s)"
+                          valor={segDe(p, "exercicio")}
+                          min={1}
+                          max={600}
+                          step={5}
+                          onChange={(v) => setCampoEtapa(p, "exercicio", { segundos: v })}
+                        />
+                        <CampoNum
+                          rotulo="Descanso (s)"
+                          valor={segDe(p, "descanso")}
+                          min={0}
+                          max={600}
+                          step={5}
+                          onChange={(v) => setCampoEtapa(p, "descanso", { segundos: v })}
+                        />
+                      </>
+                    )}
+
+                    {p.modo === "emom" && (
+                      <>
+                        <CampoNum
+                          rotulo="Rounds"
+                          valor={vezesDe(p)}
+                          min={1}
+                          max={60}
+                          onChange={(v) => setCampoEtapa(p, "repetir", { vezes: v })}
+                        />
+                        <CampoNum
+                          rotulo="Intervalo (s)"
+                          valor={segDe(p, "exercicio")}
+                          min={5}
+                          max={600}
+                          step={5}
+                          onChange={(v) => setCampoEtapa(p, "exercicio", { segundos: v })}
+                        />
+                      </>
                     )}
                   </div>
 

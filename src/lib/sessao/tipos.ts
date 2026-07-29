@@ -56,6 +56,10 @@ export interface VisaoSessao {
   faseAtual: Fase | null;
   proximaFase: Fase | null;
   restanteMs: number;
+  /** Tempo decorrido na fase (ms). Exibido quando `progressivo`. */
+  decorridoMs: number;
+  /** A fase atual conta pra cima (For Time / Relógio). */
+  progressivo: boolean;
   /** 0 a 1. */
   progresso: number;
   concluido: boolean;

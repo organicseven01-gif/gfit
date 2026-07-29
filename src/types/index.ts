@@ -37,6 +37,8 @@ export interface Etapa {
   segundos: number;
   /** Só em "repetir": quantas vezes a sequência acontece no total. */
   vezes?: number;
+  /** Conta PRA CIMA (tempo decorrido) em vez de regressivo. Ex.: For Time. */
+  progressivo?: boolean;
 }
 
 /** Um treino é uma sequência ordenada de etapas. */
@@ -133,6 +135,10 @@ export interface EstadoTvTreino {
   totalRounds: number;
   /** Milissegundos restantes na fase atual. */
   restanteMs: number;
+  /** Milissegundos decorridos na fase atual (usado quando `progressivo`). */
+  decorridoMs: number;
+  /** Conta pra cima (mostra `decorridoMs` em vez de `restanteMs`). */
+  progressivo: boolean;
   /** Progresso da fase atual, de 0 a 1. */
   progressoFase: number;
 }
