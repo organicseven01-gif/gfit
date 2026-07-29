@@ -1,6 +1,13 @@
 "use client";
 
-import type { AulaAgendada, Configuracoes, ConfigSom } from "@/types";
+import type {
+  AulaAgendada,
+  AulaParte,
+  Configuracoes,
+  ConfigSom,
+  Etapa,
+  ModoTimer,
+} from "@/types";
 import type { ConfiguracoesRow } from "@/lib/supabase/tipos-db";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 
@@ -25,7 +32,57 @@ const PADRAO: Configuracoes = {
   som: SOM_PADRAO,
   agenda: [],
   treinosDoDia: {},
+  aulasDoDia: {},
 };
+
+const MODOS_VALIDOS: ModoTimer[] = [
+  "relogio",
+  "tabata",
+  "for_time",
+  "emom",
+  "amrap",
+];
+
+/** Normaliza uma etapa vinda do JSONB. */
+function paraEtapa(bruto: unknown): Etapa | null {
+  if (!bruto || typeof bruto !== "object") return null;
+  const e = bruto as Record<string, unknown>;
+  const tipo = e.tipo;
+  if (tipo !== "exercicio" && tipo !== "descanso" && tipo !== "repetir") return null;
+  return {
+    id: String(e.id ?? crypto.randomUUID()),
+    tipo,
+    nome: String(e.nome ?? ""),
+    segundos: Number(e.segundos) || 0,
+    ...(e.vezes != null ? { vezes: Number(e.vezes) || 1 } : {}),
+  };
+}
+
+/** Normaliza o mapa "YYYY-MM-DD" -> partes da aula. */
+function paraAulasDoDia(bruto: unknown): Record<string, AulaParte[]> {
+  if (!bruto || typeof bruto !== "object" || Array.isArray(bruto)) return {};
+  const saida: Record<string, AulaParte[]> = {};
+  for (const [data, partesBrutas] of Object.entries(bruto as Record<string, unknown>)) {
+    if (!Array.isArray(partesBrutas)) continue;
+    const partes: AulaParte[] = partesBrutas
+      .filter((p): p is Record<string, unknown> => !!p && typeof p === "object")
+      .map((p) => ({
+        id: String(p.id ?? crypto.randomUUID()),
+        nome: String(p.nome ?? ""),
+        modo: MODOS_VALIDOS.includes(p.modo as ModoTimer)
+          ? (p.modo as ModoTimer)
+          : "amrap",
+        etapas: Array.isArray(p.etapas)
+          ? p.etapas.map(paraEtapa).filter((e): e is Etapa => e !== null)
+          : [],
+        movimentos: Array.isArray(p.movimentos)
+          ? p.movimentos.map(String).filter(Boolean)
+          : [],
+      }));
+    if (partes.length > 0) saida[data] = partes;
+  }
+  return saida;
+}
 
 /** Normaliza o mapa "YYYY-MM-DD" -> treinoId (tolerante a lixo). */
 function paraTreinosDoDia(bruto: unknown): Record<string, string> {
@@ -67,6 +124,7 @@ function paraConfig(row: ConfiguracoesRow): Configuracoes {
     },
     agenda: paraAgenda(row.agenda),
     treinosDoDia: paraTreinosDoDia(row.treinos_do_dia),
+    aulasDoDia: paraAulasDoDia(row.aulas_do_dia),
   };
 }
 
@@ -87,6 +145,7 @@ export async function atualizarConfiguracoes(
     som?: Partial<ConfigSom>;
     agenda?: AulaAgendada[];
     treinosDoDia?: Record<string, string>;
+    aulasDoDia?: Record<string, AulaParte[]>;
   },
 ): Promise<void> {
   const sb = criarClienteNavegador();
@@ -96,6 +155,7 @@ export async function atualizarConfiguracoes(
   if (patch.logoUrl !== undefined) linha.logo_url = patch.logoUrl;
   if (patch.agenda !== undefined) linha.agenda = patch.agenda;
   if (patch.treinosDoDia !== undefined) linha.treinos_do_dia = patch.treinosDoDia;
+  if (patch.aulasDoDia !== undefined) linha.aulas_do_dia = patch.aulasDoDia;
 
   const s = patch.som;
   if (s) {

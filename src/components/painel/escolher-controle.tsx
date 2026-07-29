@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Smartphone, ArrowRight, Dumbbell, Play, CalendarClock } from "lucide-react";
-import type { Configuracoes, Treino } from "@/types";
+import type { AulaParte, Configuracoes, Treino } from "@/types";
 import { listarTreinos } from "@/lib/services/treinos-service";
 import { obterConfiguracoes } from "@/lib/services/configuracoes-service";
 import {
@@ -42,12 +42,15 @@ export function EscolherControle() {
     return () => clearInterval(id);
   }, []);
 
-  const treinoHojeId = config?.treinosDoDia[dataLocalISO(agora)];
+  const dataHoje = dataLocalISO(agora);
+  const aulaHoje = config?.aulasDoDia[dataHoje] ?? null;
+  const treinoHojeId = config?.treinosDoDia[dataHoje];
   const treinoHoje = treinos.find((t) => t.id === treinoHojeId) ?? null;
   const turma: OcorrenciaAula | null = config
     ? (aulaAtual(config.agenda, agora) ?? proximaAula(config.agenda, agora))
     : null;
   const emAula = !!(config && aulaAtual(config.agenda, agora));
+  const temAgora = !!(aulaHoje?.length || treinoHoje);
 
   return (
     <div className="space-y-6">
@@ -56,13 +59,16 @@ export function EscolherControle() {
         descricao="Comande a contagem pelo celular, de perto dos alunos."
       />
 
-      {/* AGORA: treino do dia + turma do horário, pronto pra iniciar */}
-      {!carregando && (
-        <CardAgora treino={treinoHoje} turma={turma} emAula={emAula} />
-      )}
+      {/* AGORA: aula (em partes) ou treino do dia + turma, pronto pra iniciar */}
+      {!carregando &&
+        (aulaHoje?.length ? (
+          <CardAgoraAula partes={aulaHoje} turma={turma} emAula={emAula} />
+        ) : (
+          <CardAgora treino={treinoHoje} turma={turma} emAula={emAula} />
+        ))}
 
       <h2 className="text-sm font-semibold tracking-wide text-texto-suave uppercase">
-        {treinoHoje ? "Ou escolha outro treino" : "Escolha um treino"}
+        {temAgora ? "Ou escolha outro treino" : "Escolha um treino"}
       </h2>
 
       {carregando ? (
@@ -124,6 +130,47 @@ export function EscolherControle() {
   );
 }
 
+/** Card de destaque para a aula em partes: leva ao controle da aula. */
+function CardAgoraAula({
+  partes,
+  turma,
+  emAula,
+}: {
+  partes: AulaParte[];
+  turma: OcorrenciaAula | null;
+  emAula: boolean;
+}) {
+  return (
+    <Card className="overflow-hidden border-marca/50 bg-marca/5">
+      <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1 space-y-1">
+          <span className="flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-marca uppercase">
+            <span className="tv-pulso inline-block size-2 rounded-full bg-marca" />
+            {turma
+              ? emAula
+                ? `Agora · ${turma.nome} · ${horarioDe(turma.inicio)}`
+                : `Próxima turma · ${turma.nome} · ${horarioDe(turma.inicio)}`
+              : "Aula de hoje"}
+          </span>
+          <p className="text-2xl font-extrabold text-texto">Aula de hoje</p>
+          <p className="truncate text-sm text-texto-suave">
+            {partes.length} {partes.length === 1 ? "parte" : "partes"}:{" "}
+            {partes.map((p) => p.nome).join(" · ")}
+          </p>
+        </div>
+
+        <Link
+          href="/controle-aula"
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-marca px-6 py-4 text-base font-bold text-marca-contraste transition-colors hover:bg-marca-forte"
+        >
+          <Play className="size-5" aria-hidden />
+          Iniciar aula
+        </Link>
+      </div>
+    </Card>
+  );
+}
+
 /** Card de destaque: o treino do dia pronto pra iniciar, com contexto da turma. */
 function CardAgora({
   treino,
@@ -144,14 +191,14 @@ function CardAgora({
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-texto">
-              Nenhum treino definido para hoje
+              Nenhuma aula definida para hoje
             </p>
             <p className="text-sm text-texto-fraco">
-              Defina o treino do dia na{" "}
+              Monte a aula do dia na{" "}
               <Link href="/painel/agenda" className="text-marca hover:underline">
                 Agenda
               </Link>{" "}
-              — ele aparece aqui pronto pra iniciar.
+              — ela aparece aqui pronta pra iniciar.
             </p>
           </div>
         </div>

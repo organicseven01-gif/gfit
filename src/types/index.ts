@@ -187,6 +187,24 @@ export interface ConfigSom {
   conclusao: boolean;
 }
 
+/**
+ * Uma parte de uma aula (aquecimento, AMRAP, WOD…).
+ *
+ * Cada parte tem cronômetro próprio (derivado de `etapas`, no mesmo motor dos
+ * treinos) e uma lista de movimentos só para exibição na TV.
+ */
+export interface AulaParte {
+  id: string;
+  /** "Aquecimento", "AMRAP 10'", "WOD For Time". */
+  nome: string;
+  /** Modo do timer desta parte. */
+  modo: ModoTimer;
+  /** Fases cronometradas da parte (mesmo modelo dos treinos). */
+  etapas: Etapa[];
+  /** Movimentos exibidos na TV (ex.: "8-12 KB Bent Over Row"). Só visual. */
+  movimentos: string[];
+}
+
 /** Configurações da unidade, únicas por instalação. */
 export interface Configuracoes {
   nomeAcademia: string;
@@ -194,6 +212,8 @@ export interface Configuracoes {
   som: ConfigSom;
   /** Grade semanal de turmas exibida na TV. */
   agenda: AulaAgendada[];
-  /** Treino de cada dia: mapa "YYYY-MM-DD" → id do treino. */
+  /** Treino de cada dia: mapa "YYYY-MM-DD" → id do treino. (legado, 1 parte) */
   treinosDoDia: Record<string, string>;
+  /** Aula de cada dia em partes: mapa "YYYY-MM-DD" → partes. */
+  aulasDoDia: Record<string, AulaParte[]>;
 }

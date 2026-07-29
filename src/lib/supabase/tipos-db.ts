@@ -81,6 +81,8 @@ export interface ConfiguracoesRow {
   agenda: unknown;
   /** Treino de cada dia (mapa "YYYY-MM-DD" -> id do treino). */
   treinos_do_dia: unknown;
+  /** Aula de cada dia em partes (mapa "YYYY-MM-DD" -> partes). */
+  aulas_do_dia: unknown;
   atualizado_em: string;
 }
 
