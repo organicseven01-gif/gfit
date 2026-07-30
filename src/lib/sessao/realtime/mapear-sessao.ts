@@ -1,5 +1,6 @@
 "use client";
 
+import type { Treino } from "@/types";
 import type { EstadoSessao } from "@/lib/sessao/tipos";
 import type { SessaoRow } from "@/lib/supabase/tipos-db";
 import { expandirEtapas } from "@/lib/timer/expandir";
@@ -23,6 +24,7 @@ export function estadoParaLinha(estado: EstadoSessao) {
   return {
     id: ID_SESSAO_ATIVA,
     treino_id: estado.treino?.id ?? null,
+    treino_snapshot: estado.treino ?? null,
     status: estado.status,
     etapa_atual: estado.indice,
     round_atual: fase?.round ?? 1,
@@ -46,7 +48,9 @@ export function estadoParaLinha(estado: EstadoSessao) {
 export async function linhaParaEstado(
   row: SessaoRow,
 ): Promise<EstadoSessao> {
-  const treino = row.treino_id ? await obterTreino(row.treino_id) : null;
+  // Prefere o retrato salvo (recupera aulas sintéticas); senão busca por id.
+  const snap = (row.treino_snapshot as Treino | null) ?? null;
+  const treino = snap ?? (row.treino_id ? await obterTreino(row.treino_id) : null);
   const fases = treino ? expandirEtapas(treino.etapas) : [];
   const duracaoMs = (fases[row.etapa_atual]?.segundos ?? 0) * 1000;
   const rodando = row.status === "rodando";

@@ -50,6 +50,8 @@ export interface SessaoRow {
   tempo_restante: number;
   started_at: string | null;
   paused_at: string | null;
+  /** Retrato do treino em execução (jsonb) — recupera aulas "sintéticas". */
+  treino_snapshot: unknown;
   updated_at: string;
 }
 

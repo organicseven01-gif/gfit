@@ -146,7 +146,7 @@ export function ControleAula() {
 
   return (
     <div
-      className="mx-auto flex h-full w-full max-w-md flex-col"
+      className="mx-auto flex min-h-full w-full max-w-md flex-col"
       style={{ ["--c" as string]: corFase }}
     >
       {/* Cabeçalho */}
@@ -167,7 +167,7 @@ export function ControleAula() {
       </header>
 
       {/* Seletor de partes */}
-      <div className="flex gap-2 overflow-x-auto px-4 pb-2">
+      <div className="flex shrink-0 gap-2 overflow-x-auto px-4 pb-2">
         {partes.map((p, i) => {
           const ativa = p.id === parteAtivaId;
           return (
@@ -207,7 +207,7 @@ export function ControleAula() {
       )}
 
       {/* Botões */}
-      <div className="grid flex-1 grid-cols-2 gap-3 p-4">
+      <div className="mt-auto grid grid-cols-2 gap-3 p-4">
         <BotaoControle
           className="col-span-2 min-h-24"
           destaque

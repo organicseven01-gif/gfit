@@ -12,7 +12,7 @@ export default function ControleLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-dvh w-dvw flex-col overflow-hidden bg-fundo select-none">
+    <div className="flex h-dvh w-dvw flex-col overflow-y-auto bg-fundo select-none">
       {children}
     </div>
   );
