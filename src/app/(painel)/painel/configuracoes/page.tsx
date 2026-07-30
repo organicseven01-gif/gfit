@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Building2, Palette, MonitorPlay, Plus } from "lucide-react";
+import { Building2, Palette } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   Card,
@@ -11,7 +10,6 @@ import {
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { SecaoSom } from "@/components/painel/secao-som";
 
 export const metadata = { title: "Configurações" };
@@ -48,41 +46,6 @@ export default function ConfiguracoesPage() {
                 </Button>
               </div>
             </div>
-          </CardConteudo>
-        </Card>
-
-        {/* Telas */}
-        <Card>
-          <CardCabecalho className="flex-row items-start justify-between">
-            <div className="space-y-1">
-              <CardTitulo className="flex items-center gap-2">
-                <MonitorPlay className="size-4 text-texto-fraco" aria-hidden />
-                Telas
-              </CardTitulo>
-              <CardDescricao>TVs pareadas nesta unidade.</CardDescricao>
-            </div>
-            <Button tamanho="sm" disabled>
-              <Plus className="size-4" aria-hidden />
-              Parear
-            </Button>
-          </CardCabecalho>
-          <CardConteudo className="space-y-3">
-            {[1, 2].map((n) => (
-              <div
-                key={n}
-                className="flex items-center justify-between gap-3 rounded-lg border border-borda bg-superficie-2 p-3"
-              >
-                <Skeleton className="h-3 w-28" />
-                <Badge tom="neutro">Offline</Badge>
-              </div>
-            ))}
-            <p className="text-xs text-texto-fraco">
-              Abra{" "}
-              <Link href="/tv" className="text-marca hover:underline">
-                a tela da TV
-              </Link>{" "}
-              na televisão e informe aqui o código exibido.
-            </p>
           </CardConteudo>
         </Card>
 
