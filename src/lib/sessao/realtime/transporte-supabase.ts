@@ -37,12 +37,24 @@ export function criarTransporteSupabase(): Transporte {
     // 1) evento instantâneo para as telas
     canal.send({ type: "broadcast", event: EVENTO, payload: estado });
     // 2) persiste a sessão única (durabilidade / hidratação). Não bloqueia.
+    const linha = estadoParaLinha(estado);
     void sb
       .from("sessoes")
-      .upsert(estadoParaLinha(estado))
+      .upsert(linha)
       .then((res: { error: { message: string } | null }) => {
-        if (res.error)
-          console.warn("[sessao] falha ao persistir:", res.error.message);
+        if (!res.error) return;
+        // Resiliência: se o banco ainda não reconhece `treino_snapshot`
+        // (cache do PostgREST), grava o resto assim mesmo — sem quebrar a
+        // sessão. A recuperação da aula sintética volta quando o cache atualiza.
+        const semSnapshot = { ...linha };
+        delete (semSnapshot as { treino_snapshot?: unknown }).treino_snapshot;
+        void sb
+          .from("sessoes")
+          .upsert(semSnapshot)
+          .then((r2: { error: { message: string } | null }) => {
+            if (r2.error)
+              console.warn("[sessao] falha ao persistir:", r2.error.message);
+          });
       });
   };
 

@@ -21,9 +21,16 @@ export function estadoParaLinha(estado: EstadoSessao) {
   const duracaoMs = (fase?.segundos ?? 0) * 1000;
   const rodando = estado.status === "rodando";
 
+  // Partes da aula têm id sintético ("parte-…"), que NÃO é UUID válido para a
+  // coluna treino_id. Nesses casos gravamos null e confiamos no snapshot.
+  const treinoIdReal =
+    estado.treino && !estado.treino.id.startsWith("parte-")
+      ? estado.treino.id
+      : null;
+
   return {
     id: ID_SESSAO_ATIVA,
-    treino_id: estado.treino?.id ?? null,
+    treino_id: treinoIdReal,
     treino_snapshot: estado.treino ?? null,
     status: estado.status,
     etapa_atual: estado.indice,
