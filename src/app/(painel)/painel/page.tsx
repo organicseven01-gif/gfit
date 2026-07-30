@@ -1,28 +1,10 @@
 import Link from "next/link";
-import {
-  Plus,
-  MonitorPlay,
-  Library,
-  LayoutTemplate,
-  Smartphone,
-  Dumbbell,
-  Timer,
-  Activity,
-} from "lucide-react";
+import { Plus, Library, LayoutTemplate, Smartphone } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card, CardCabecalho, CardTitulo, CardConteudo } from "@/components/ui/card";
+import { Card, CardConteudo } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata = { title: "Home" };
-
-const indicadores = [
-  { rotulo: "Treinos na biblioteca", icone: Dumbbell },
-  { rotulo: "Templates", icone: Timer },
-  { rotulo: "TVs conectadas", icone: MonitorPlay },
-  { rotulo: "Sessões hoje", icone: Activity },
-];
 
 const atalhos = [
   {
@@ -67,21 +49,6 @@ export default function HomePage() {
         }
       />
 
-      {/* Indicadores */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {indicadores.map(({ rotulo, icone: Icone }) => (
-          <Card key={rotulo}>
-            <CardConteudo className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-texto-suave">{rotulo}</span>
-                <Icone className="size-4 text-texto-fraco" aria-hidden />
-              </div>
-              <p className="numeros-timer text-3xl font-bold text-texto-fraco">—</p>
-            </CardConteudo>
-          </Card>
-        ))}
-      </div>
-
       {/* Atalhos */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {atalhos.map(({ titulo, descricao, href, icone: Icone }) => (
@@ -99,36 +66,6 @@ export default function HomePage() {
             </Card>
           </Link>
         ))}
-      </div>
-
-      <div className="grid gap-4">
-        {/* TVs no ar */}
-        <Card>
-          <CardCabecalho className="flex-row items-center justify-between">
-            <CardTitulo>TVs no ar</CardTitulo>
-            <Link
-              href="/painel/configuracoes"
-              className="text-xs font-medium text-marca hover:underline"
-            >
-              Gerenciar
-            </Link>
-          </CardCabecalho>
-          <CardConteudo className="space-y-3">
-            {[1, 2].map((n) => (
-              <div
-                key={n}
-                className="flex items-center justify-between gap-3 rounded-lg border border-borda bg-superficie-2 p-3"
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  <MonitorPlay className="size-4 shrink-0 text-texto-fraco" aria-hidden />
-                  <Skeleton className="h-3 w-28" />
-                </div>
-                <Badge tom="neutro">Offline</Badge>
-              </div>
-            ))}
-          </CardConteudo>
-        </Card>
-
       </div>
     </div>
   );
