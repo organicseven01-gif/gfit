@@ -21,6 +21,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 interface Instante {
   relogio: string;
+  data: string;
   atual: OcorrenciaAula | null;
   proxima: OcorrenciaAula | null;
   faltaMs: number;
@@ -46,6 +47,11 @@ export function PainelAguardando({ estado }: { estado: EstadoTvAguardando }) {
       const proxima = proximaAula(estado.agenda, d);
       setAgora({
         relogio: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+        data: d.toLocaleDateString("pt-BR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+        }),
         atual: aulaAtual(estado.agenda, d),
         proxima,
         faltaMs: proxima ? proxima.inicio.getTime() - d.getTime() : Infinity,
@@ -58,6 +64,8 @@ export function PainelAguardando({ estado }: { estado: EstadoTvAguardando }) {
 
   const emAula = !!agora?.atual;
   const alerta = !emAula && agora !== null && agora.faltaMs <= ALERTA_MIN * 60_000;
+  // sem turmas: "descanso de tela" com relógio grande no centro
+  const semAulas = !emAula && agora !== null && !agora.proxima;
 
   return (
     <div className="relative flex h-full flex-col justify-between">
@@ -79,9 +87,11 @@ export function PainelAguardando({ estado }: { estado: EstadoTvAguardando }) {
           />
           {emAula ? "AULA EM ANDAMENTO" : "AGUARDANDO TREINO"}
         </span>
-        <span className="numeros-timer text-[2vw] leading-none font-bold text-texto-suave tabular-nums">
-          {agora?.relogio ?? "--:--"}
-        </span>
+        {!semAulas && (
+          <span className="numeros-timer text-[2vw] leading-none font-bold text-texto-suave tabular-nums">
+            {agora?.relogio ?? "--:--"}
+          </span>
+        )}
       </header>
 
       {/* Centro: muda conforme o modo */}
@@ -97,7 +107,11 @@ export function PainelAguardando({ estado }: { estado: EstadoTvAguardando }) {
             alerta={alerta}
           />
         ) : (
-          <ModoSemAulas nome={estado.nomeAcademia} />
+          <ModoSemAulas
+            nome={estado.nomeAcademia}
+            relogio={agora?.relogio ?? null}
+            data={agora?.data ?? ""}
+          />
         )}
       </div>
 
@@ -190,18 +204,26 @@ function ModoProxima({
   );
 }
 
-/** Grade vazia — só a marca. */
-function ModoSemAulas({ nome }: { nome: string }) {
+/** Sem turmas na agenda — "descanso de tela": relógio grande + marca. */
+function ModoSemAulas({
+  nome,
+  relogio,
+  data,
+}: {
+  nome: string;
+  relogio: string | null;
+  data: string;
+}) {
   return (
     <>
-      <span className="text-[1vw] font-bold tracking-[0.4em] text-marca">
-        {nome.toUpperCase()}
-      </span>
-      <p className="text-center text-[3vw] leading-none font-extrabold text-texto-suave uppercase">
-        Nenhuma aula programada
+      <p className="numeros-timer text-[13vw] leading-[0.82] font-extrabold text-texto tabular-nums">
+        {relogio ?? "--:--"}
       </p>
-      <p className="text-[1vw] tracking-[0.2em] text-texto-fraco uppercase">
-        Cadastre a agenda no painel
+      <p className="text-[1.7vw] font-semibold tracking-[0.15em] text-texto-suave capitalize">
+        {data}
+      </p>
+      <p className="mt-[1.5vh] text-[1.3vw] font-bold tracking-[0.45em] text-marca uppercase">
+        {nome}
       </p>
     </>
   );
