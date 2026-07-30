@@ -20,8 +20,10 @@ import { useSessao } from "@/lib/sessao/hooks/use-sessao";
 import { useVisaoSessao } from "@/lib/sessao/hooks/use-visao-sessao";
 import { useSonsSessao } from "@/lib/sons/use-sons-sessao";
 import { desbloquearSom } from "@/lib/sons/motor-sons";
-import { formatarTempo, cn } from "@/lib/utils";
+import { visaoParaEstadoTv } from "@/lib/sessao/services/mapear-tv";
+import { cn } from "@/lib/utils";
 import { BotaoControle } from "@/components/controle/botao-controle";
+import { PreviaTv } from "@/components/controle/previa-tv";
 
 const AJUSTE_SEGUNDOS = 10;
 
@@ -89,7 +91,6 @@ export function ControleAula() {
   const pausado = estado.status === "pausado";
   const concluido = visao.concluido;
   const faseAtual = visao.faseAtual;
-  const tempoMostrar = visao.progressivo ? visao.decorridoMs : visao.restanteMs;
 
   const corFase =
     faseAtual && !concluido
@@ -188,39 +189,10 @@ export function ControleAula() {
         })}
       </div>
 
-      {/* Visor */}
-      <section
-        className="mx-4 flex flex-col items-center justify-center gap-1 rounded-3xl border py-6 transition-colors"
-        style={{
-          borderColor: `color-mix(in srgb, ${corFase} 40%, var(--color-borda))`,
-          backgroundColor: `color-mix(in srgb, ${corFase} 10%, transparent)`,
-        }}
-      >
-        <p
-          className="text-sm font-bold tracking-[0.2em] uppercase"
-          style={{ color: corFase }}
-        >
-          {!parteAtiva
-            ? "AGUARDANDO"
-            : concluido
-              ? "CONCLUÍDO"
-              : faseAtual
-                ? faseAtual.tipo === "descanso"
-                  ? "DESCANSO"
-                  : faseAtual.nome
-                : parteAtiva.nome}
-        </p>
-
-        <p className="numeros-timer text-7xl leading-none font-extrabold text-texto">
-          {formatarTempo(parteAtiva ? tempoMostrar : 0)}
-        </p>
-
-        <p className="mt-1 h-5 text-sm text-texto-fraco">
-          {visao.proximaFase
-            ? `A seguir: ${visao.proximaFase.tipo === "descanso" ? "Descanso" : visao.proximaFase.nome}`
-            : ""}
-        </p>
-      </section>
+      {/* Prévia do que está na TV */}
+      <div className="pb-3">
+        <PreviaTv estado={visaoParaEstadoTv(visao)} />
+      </div>
 
       {/* Exercícios da parte */}
       {parteAtiva && parteAtiva.movimentos.length > 0 && (
