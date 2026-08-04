@@ -46,7 +46,7 @@ export function PainelAguardando({ estado }: { estado: EstadoTvAguardando }) {
       const d = new Date();
       const proxima = proximaAula(estado.agenda, d);
       setAgora({
-        relogio: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+        relogio: `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,
         data: d.toLocaleDateString("pt-BR", {
           weekday: "long",
           day: "numeric",
@@ -216,8 +216,8 @@ function ModoSemAulas({
 }) {
   return (
     <>
-      <p className="numeros-timer text-[13vw] leading-[0.82] font-extrabold text-texto tabular-nums">
-        {relogio ?? "--:--"}
+      <p className="numeros-timer text-[8.5vw] leading-[0.82] font-extrabold text-texto tabular-nums">
+        {relogio ?? "--:--:--"}
       </p>
       <p className="text-[1.7vw] font-semibold tracking-[0.15em] text-texto-suave capitalize">
         {data}
