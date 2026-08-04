@@ -86,11 +86,21 @@ export function ControleAula() {
     };
   }, []);
 
-  const parteAtiva = partes?.find((p) => p.id === parteAtivaId) ?? null;
   const rodando = estado.status === "rodando";
   const pausado = estado.status === "pausado";
   const concluido = visao.concluido;
   const faseAtual = visao.faseAtual;
+  // Há uma sessão de verdade rodando/pausada no banco — pode não ter sido
+  // esta aba que a iniciou (ex.: reabriu a página, ou outro celular tocou).
+  const emSessao = estado.status !== "ocioso";
+
+  // Prioriza o que está REALMENTE rodando na sessão (reflete até depois de
+  // recarregar a página, ou se outro celular tocou); cai para a seleção
+  // local só enquanto ninguém iniciou nada ainda.
+  const parteAtiva =
+    partes?.find((p) => estado.treino?.id === `parte-${p.id}`) ??
+    partes?.find((p) => p.id === parteAtivaId) ??
+    null;
 
   const corFase =
     faseAtual && !concluido
@@ -127,7 +137,7 @@ export function ControleAula() {
     );
   }
 
-  if (partes.length === 0) {
+  if (partes.length === 0 && !emSessao) {
     return (
       <div className="grid flex-1 place-items-center p-6 text-center">
         <div className="space-y-3">
@@ -139,6 +149,36 @@ export function ControleAula() {
             <ArrowLeft className="size-4" aria-hidden />
             Montar a aula na Agenda
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Sem aula cadastrada hoje, mas há uma sessão ativa (ex.: sobra de um
+  // teste, ou um treino avulso iniciado pela biblioteca) — dá pra pará-la
+  // por aqui em vez de ficar preso sem nenhum controle.
+  if (partes.length === 0 && emSessao) {
+    return (
+      <div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center gap-4 p-4">
+        <p className="text-center text-sm text-texto-fraco">
+          Nenhuma aula cadastrada para hoje, mas há uma sessão ativa.
+        </p>
+        <PreviaTv estado={visaoParaEstadoTv(visao)} />
+        <div className="grid grid-cols-2 gap-3">
+          <BotaoControle
+            rotulo={rodando ? "Pausar" : "Continuar"}
+            icone={rodando ? Pause : Play}
+            onClick={aoTocarPrincipal}
+          />
+          <BotaoControle
+            tom="perigo"
+            rotulo="Encerrar"
+            icone={Square}
+            onClick={() => {
+              despachar({ tipo: "FINISH" });
+              setParteAtivaId(null);
+            }}
+          />
         </div>
       </div>
     );
@@ -161,7 +201,11 @@ export function ControleAula() {
         <div className="min-w-0">
           <p className="truncate font-semibold text-texto">Aula de hoje</p>
           <p className="text-xs text-texto-fraco">
-            {parteAtiva ? `Parte ${partes.indexOf(parteAtiva) + 1} de ${partes.length}` : "Escolha uma parte"}
+            {parteAtiva
+              ? `Parte ${partes.indexOf(parteAtiva) + 1} de ${partes.length}`
+              : emSessao
+                ? "Sessão em andamento"
+                : "Escolha uma parte"}
           </p>
         </div>
       </header>
@@ -214,20 +258,20 @@ export function ControleAula() {
           rotulo={rotuloPrincipal}
           icone={iconePrincipal}
           onClick={aoTocarPrincipal}
-          disabled={!parteAtiva}
+          disabled={!parteAtiva && !emSessao}
         />
 
         <BotaoControle
           rotulo="Anterior"
           icone={SkipBack}
           onClick={() => despachar({ tipo: "PREVIOUS" })}
-          disabled={!parteAtiva || visao.indice === 0}
+          disabled={!emSessao || visao.indice === 0}
         />
         <BotaoControle
           rotulo="Próximo"
           icone={SkipForward}
           onClick={() => despachar({ tipo: "NEXT" })}
-          disabled={!parteAtiva || visao.indice >= visao.totalFases - 1}
+          disabled={!emSessao || visao.indice >= visao.totalFases - 1}
         />
 
         <BotaoControle
@@ -235,14 +279,14 @@ export function ControleAula() {
           sublabel="Adicionar"
           icone={Plus}
           onClick={() => despachar({ tipo: "ADD_TIME", segundos: AJUSTE_SEGUNDOS })}
-          disabled={!parteAtiva || concluido}
+          disabled={!emSessao || concluido}
         />
         <BotaoControle
           rotulo={`−${AJUSTE_SEGUNDOS}s`}
           sublabel="Diminuir"
           icone={Minus}
           onClick={() => despachar({ tipo: "REMOVE_TIME", segundos: AJUSTE_SEGUNDOS })}
-          disabled={!parteAtiva || concluido}
+          disabled={!emSessao || concluido}
         />
 
         <BotaoControle
@@ -254,7 +298,7 @@ export function ControleAula() {
             despachar({ tipo: "FINISH" });
             setParteAtivaId(null);
           }}
-          disabled={!parteAtiva}
+          disabled={!emSessao}
         />
       </div>
     </div>
