@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Configuracoes, MidiaPatrocinador } from "@/types";
+import { useSessao } from "@/lib/sessao/hooks/use-sessao";
 import { useVisaoSessao } from "@/lib/sessao/hooks/use-visao-sessao";
 import { visaoParaEstadoTv } from "@/lib/sessao/services/mapear-tv";
 import { listarParaExibicao } from "@/lib/services/patrocinadores-service";
 import { obterConfiguracoes } from "@/lib/services/configuracoes-service";
+import { obterTreino } from "@/lib/services/treinos-service";
 import { useSonsSessao } from "@/lib/sons/use-sons-sessao";
 import { desbloquearSom } from "@/lib/sons/motor-sons";
 import { DisplayTv } from "@/components/tv/display-tv";
@@ -17,9 +19,11 @@ import { PainelControleTv } from "@/components/tv/painel-controle-tv";
  */
 export function TvAoVivo() {
   const visao = useVisaoSessao();
+  const { despachar } = useSessao();
   const [patrocinadores, setPatrocinadores] = useState<MidiaPatrocinador[]>([]);
   const [config, setConfig] = useState<Configuracoes | null>(null);
   const [somBloqueado, setSomBloqueado] = useState(true);
+  const jaIniciouViaUrl = useRef(false);
 
   useEffect(() => {
     listarParaExibicao()
@@ -29,6 +33,21 @@ export function TvAoVivo() {
       .then(setConfig)
       .catch(() => setConfig(null));
   }, []);
+
+  // "Controlar na TV" (Biblioteca/Templates) chega aqui como /tv?treino=ID:
+  // já inicia o treino na hora, igual ao fluxo da Agenda — sem precisar de
+  // uma segunda tela (celular) só pra apertar Iniciar.
+  useEffect(() => {
+    if (jaIniciouViaUrl.current) return;
+    const treinoId = new URLSearchParams(window.location.search).get("treino");
+    if (!treinoId) return;
+    jaIniciouViaUrl.current = true;
+    obterTreino(treinoId).then((treino) => {
+      if (treino) despachar({ tipo: "START", treino });
+    });
+    // limpa o parâmetro da URL sem recarregar nem empilhar no histórico
+    window.history.replaceState(null, "", "/tv");
+  }, [despachar]);
 
   // Dispara os bipes conforme a sessão muda de fase.
   useSonsSessao(visao, config?.som ?? null);

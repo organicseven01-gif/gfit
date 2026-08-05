@@ -92,7 +92,7 @@ export function EditarTreino({ id }: { id: string }) {
           </Select>
         </div>
 
-        <Link href={`/controle-remoto/${treino.id}`}>
+        <Link href={`/tv?treino=${treino.id}`}>
           <Button variante="secundaria" tamanho="sm">
             <MonitorPlay className="size-4" aria-hidden />
             Controlar na TV
