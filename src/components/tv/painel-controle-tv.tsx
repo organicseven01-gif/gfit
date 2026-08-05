@@ -59,7 +59,7 @@ export function PainelControleTv() {
         onClick={() => setAberto((v) => !v)}
         aria-label={aberto ? "Fechar controle" : "Abrir controle"}
         className={cn(
-          "absolute right-[1.4vw] bottom-[1.4vh] z-20 flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold backdrop-blur transition-colors",
+          "absolute bottom-[1.4vh] left-[1.4vw] z-20 flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold backdrop-blur transition-colors",
           aberto
             ? "border-marca bg-marca text-marca-contraste"
             : "border-white/15 bg-black/50 text-texto-suave hover:border-marca/50 hover:text-marca",

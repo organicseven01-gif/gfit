@@ -69,10 +69,10 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* A tela da TV nunca deve rolar nem mostrar cursor */
+/* A tela da TV nunca deve rolar. O cursor fica visível: a TV também é
+   controlada por mouse (painel de controle embutido). */
 .tela-tv {
   overflow: hidden;
-  cursor: none;
 }
 
 /* ==========================================================================
