@@ -49,7 +49,7 @@ export function CardAgoraAula({
         </div>
 
         <Link
-          href="/controle-aula"
+          href="/tv"
           className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-marca px-6 py-4 text-base font-bold text-marca-contraste transition-colors hover:bg-marca-forte"
         >
           <Play className="size-5" aria-hidden />

@@ -9,6 +9,7 @@ import { obterConfiguracoes } from "@/lib/services/configuracoes-service";
 import { useSonsSessao } from "@/lib/sons/use-sons-sessao";
 import { desbloquearSom } from "@/lib/sons/motor-sons";
 import { DisplayTv } from "@/components/tv/display-tv";
+import { PainelControleTv } from "@/components/tv/painel-controle-tv";
 
 /**
  * A TV ao vivo: observa a sessão e alimenta a `DisplayTv`. Não envia nada.
@@ -73,6 +74,9 @@ export function TvAoVivo() {
           🔊 Toque na tela para ativar o som
         </button>
       )}
+
+      {/* Painel de controle embutido — para o professor tocar do computador. */}
+      <PainelControleTv />
     </div>
   );
 }

@@ -4,12 +4,16 @@ import { TvAoVivo } from "@/components/tv/tv-ao-vivo";
 export const metadata = { title: "Tela da TV" };
 
 /**
- * A TV é sempre OBSERVADORA: nunca envia comandos, só reflete a sessão.
- * Antes do treino no ar, a própria `DisplayTv` mostra a tela de espera.
+ * A TV também é CONTROLADORA: além de exibir, tem um painel embutido
+ * (`PainelControleTv`) para o professor comandar a aula direto do
+ * computador que alimenta a tela — não só pelo celular.
+ *
+ * Continua igual se ninguém tocar em nada: a `DisplayTv` mostra a tela de
+ * espera / o cronômetro normalmente.
  */
 export default function TvPage() {
   return (
-    <SessaoProvider papel="observador">
+    <SessaoProvider papel="controlador">
       <TvAoVivo />
     </SessaoProvider>
   );

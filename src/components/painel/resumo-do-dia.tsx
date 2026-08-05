@@ -56,8 +56,10 @@ function ResumoDoDiaConteudo() {
   const emSessaoAoVivo = estado.status !== "ocioso" && !visao.concluido;
 
   if (emSessaoAoVivo) {
+    // Aula em partes: controla direto na TV. Treino avulso: mantém o
+    // controle pelo celular, já que não tem parte pra escolher.
     const href = estado.treino?.id.startsWith("parte-")
-      ? "/controle-aula"
+      ? "/tv"
       : estado.treino
         ? `/controle-remoto/${estado.treino.id}`
         : "/painel/controle";
